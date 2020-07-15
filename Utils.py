@@ -3,8 +3,15 @@ import matplotlib.pyplot as plt
 from copy import deepcopy
 from Agent import Agent
 import numpy as np
+import ax 
 
 class Utils:
+
+    def __init__(self,player:Agent,adversary:Agent,num_of_games: int=3000):
+        super().__init__()
+        self.player = player
+        self.adversary = adversary
+        self.number_of_games = num_of_games
 
     @staticmethod
     def detect_cycle(G: nx.Graph,chain_length: int):
@@ -55,6 +62,12 @@ class Utils:
         return None
 
     @staticmethod
+    def make_graph(nodes:int):
+        G = nx.Graph()
+        G.add_node([i for i in range(1,nodes+1)])
+        return G
+
+    @staticmethod
     def transition(G:nx.Graph,color:str,edge:tuple):
         """Returns a copy of G with the edge added"""
         new_G = deepcopy(G)
@@ -68,23 +81,30 @@ class Utils:
         uncolored_edges = set(complete_G.edges) - set(G.edges)
         return uncolored_edges
 
-    @staticmethod
-    def train(player: Agent,adversary: Agent, number_of_games: int = 3000):
+    
+    def train(self,parametrization):
         """Given two Agents, the method will train them against each other until number of games is reached, by default 3000 games"""
-        for game_num in range(number_of_games):
+        self.player.hyperparameters = parametrization
+        self.adversary.hyperparameters = parametrization
+        for game_num in range(self.number_of_games):
             print("Game " + game_num+ ":")
             finished = False
             while not finished:
-                finished = player.move()#player makes move
+                finished = self.player.move()#player makes move
                 if finished:
                     break
-                finished = adversary.move()#adversary makes move
-            player.reset()
-            adversary.reset()
-        #TODO: Look into tensorboard live reporting for real-time training feedback
-        #TODO: Add Ax values to tune, i.e. win rate and total loss
+                finished = self.adversary.move()#adversary makes move
+            self.player.reset()
+            self.adversary.reset()
+        return self.player.wins/self.player.epoch, self.player.loss
 
-    
+    def optimize_training(self,params):
+        best_parameters, values, experiment, model = ax.optimize(
+            parameters=params,
+            evaluation_function=self.train,
+            minimize=True,
+        )
+        return best_parameters
 
     @staticmethod
     def play(player: Agent, goes_first: bool = True):
@@ -101,7 +121,7 @@ class Utils:
                 
         #TODO: When finished with one Q-Learning model, use those methods to write this
 
-    #TODO: Write Ax optimizing method
+ 
         
 g = nx.Graph()
 g.add_nodes_from([i for i in range(6)])
