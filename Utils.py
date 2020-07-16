@@ -4,6 +4,7 @@ from copy import deepcopy
 from Agent import Agent
 import numpy as np
 import ax 
+from tqdm import tqdm
 
 class Utils:
 
@@ -64,7 +65,7 @@ class Utils:
     @staticmethod
     def make_graph(nodes:int):
         G = nx.Graph()
-        G.add_node([i for i in range(1,nodes+1)])
+        G.add_nodes_from([i for i in range(0,nodes)])
         return G
 
     @staticmethod
@@ -82,27 +83,35 @@ class Utils:
         return uncolored_edges
 
     
-    def train(self,parametrization):
+    def train(self,parametrization=None):
         """Given two Agents, the method will train them against each other until number of games is reached, by default 3000 games"""
-        self.player.hyperparameters = parametrization
-        self.adversary.hyperparameters = parametrization
-        for game_num in range(self.number_of_games):
-            print("Game " + game_num+ ":")
+        self.player.hard_reset()
+        self.adversary.hard_reset()
+        if parametrization is not None:
+            self.player.hyperparameters = parametrization
+            self.adversary.hyperparameters = parametrization
+            self.player.update_writer(parametrization)
+            self.player.update_writer(parametrization)
+        for game_num in tqdm(range(self.number_of_games)):
             finished = False
             while not finished:
-                finished = self.player.move()#player makes move
+                finished = self.player.move(self.adversary)#player makes move
                 if finished:
                     break
-                finished = self.adversary.move()#adversary makes move
+                finished = self.adversary.move(self.player)#adversary makes move
+            self.player.epoch += 1
+            self.adversary.epoch += 1
+            self.player.write_info()
+            self.adversary.write_info()
             self.player.reset()
             self.adversary.reset()
-        return self.player.wins/self.player.epoch, self.player.loss
+        return self.player.wins/self.player.epoch
 
     def optimize_training(self,params):
         best_parameters, values, experiment, model = ax.optimize(
             parameters=params,
             evaluation_function=self.train,
-            minimize=True,
+            minimize=False,
         )
         return best_parameters
 
@@ -123,8 +132,3 @@ class Utils:
 
  
         
-g = nx.Graph()
-g.add_nodes_from([i for i in range(6)])
-g = Utils.new_edge(g,'red',(1,2))
-g = Utils.new_edge(g,'blue',(3,4))
-print(Utils.display_graph(g))
