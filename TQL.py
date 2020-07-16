@@ -15,7 +15,18 @@ class TQL(Agent):
         self.training = training
         super().__init__(color, hyperparameters)
 
-    def move(self):
+    def move(self,state):
+        #Update network based on the state the opponent just put the environment in
+        if training and self.action is not None:
+            self.update_q(state,Utils.reward(state,self.chain_length,self.color))
+        
+        #If its the end, return False, otherwise make an action
+        if len(Utils.get_uncolored_edges(state)) < 1 or Utils.reward(state,self.chain_length,self.color):
+            self.reset()
+            return False, None
+        else:
+            self.state = state
+
         if random.random() < self.hyperparameters and training:
             self.action = random.choice(Utils.get_uncolored_edges(self.state))
         else:
@@ -34,15 +45,18 @@ class TQL(Agent):
         #compute reward
         reward = Utils.reward(Utils.transition(self.state,self.color,self.action),self.chain_length,self.color)
 
+        #update q table
+        self.update_q(Utils.transition(self.state,self.color,self.action),reward)
+
+        return True,Utils.transition(self.state,self.color,self.action)
+
         
 
-    def update_q(self):
+    def update_q(self,new_state,reward):
         pass
 
     def get_q(self):
         pass
-
-    def opp_move():
 
     def reset():
         self.state = None
