@@ -4,25 +4,12 @@ from Utils import Utils
 from time import time_ns
 import torch
 from collections import deque
+import torch_geometric
 
-
-class QNetwork(torch.nn.Module):
-    def __init__(self, board_size, hidden_layer_size):
-        super(QNetwork, self).__init__()
-        self.input = torch.nn.Linear(board_size ** 2, hidden_layer_size)
-        self.l2 = torch.nn.Linear(hidden_layer_size, hidden_layer_size)
-        self.output = torch.nn.Linear(hidden_layer_size, board_size ** 2)
-
-    def forward(self, x):
-        y = torch.nn.functional.relu(self.input(x))
-        y = torch.nn.functional.relu(self.l2(y))
-        y = torch.nn.functional.relu(self.output(y))
-        return y
-
-
-class DQN(Agent):
+class GCN(Agent): #TODO: Write method to convert igraph to networkx to a readable dataset by torch_geometric
     def __init__(self, color, hyperparameters, training=True, number_of_nodes: int = 6, chain_length: int = 3):
-        super(DQN, self).__init__(color, hyperparameters)
+        #TODO: Set up torch_geometric GCNConv Model
+        super(GCN, self).__init__(color, hyperparameters)
         self.q_network = QNetwork(number_of_nodes,hyperparameters['HIDDEN_LAYER_SIZE'])
         self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=hyperparameters['LEARNING_RATE'])
         self.loss_fn = torch.nn.MSELoss(reduction='sum')
@@ -67,7 +54,7 @@ class DQN(Agent):
             return True
         else:
             return False
-
+    #TODO:Update forward mechanism
     def update_q(self, state, action, reward, color=None):
         if color is None:
             color = self.color

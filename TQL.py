@@ -1,7 +1,6 @@
 from Agent import Agent
 import random
 from Utils import Utils
-import networkx as nx
 from time import time_ns
 
 class TQL(Agent):
@@ -48,14 +47,14 @@ class TQL(Agent):
         max_q,_ = self.get_max_q(Utils.transition(state, color, action))
         new_q = (1 - self.hyperparameters['ALPHA']) * current_q +self.hyperparameters['ALPHA'] * (reward + self.hyperparameters['GAMMA'] * max_q)
         self.loss = (self.loss + (new_q-current_q))
-        self.q_table[str(list(state.adjacency())) + str(action)] = new_q
+        self.q_table[str(list(state.get_adjacency(attribute="weight"))) + str(action)] = new_q
 
     def get_q(self, state, action):
         try:
-            q_val = self.q_table[str(list(state.adjacency())) + str(action)]
+            q_val = self.q_table[str(list(state.get_adjacency(attribute="weight"))) + str(action)]
             return q_val
         except Exception:
-            self.q_table[str(list(state.adjacency())) + str(action)] = 0.0
+            self.q_table[str(list(state.get_adjacency(attribute="weight"))) + str(action)] = 0.0
             return 0.0
 
     def get_max_q(self, state):
@@ -81,7 +80,7 @@ class TQL(Agent):
         self.state = Utils.transition(state,c,action)
 
     def reset(self):
-        self.state = Utils.make_graph(nx.number_of_nodes(self.state))
+        self.state = Utils.make_graph(self.state.vcount())
         self.action = None
         self.loss = 0
         self.number_of_moves = 0
