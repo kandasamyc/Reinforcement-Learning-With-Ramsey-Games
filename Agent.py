@@ -1,4 +1,3 @@
-import networkx as nx
 from torch.utils.tensorboard import SummaryWriter
 
 HP_LIST = ["Epsilon", "Gamma", "Learning Rate", "Target Model Update Frequency", "Batch Size", "Memory Size"]

@@ -1,10 +1,8 @@
 from Agent import Agent
-import pandas as pd
 import random
 from Utils import Utils
 import networkx as nx
 from time import time_ns
-
 
 class TQL(Agent):
     def __init__(self, color, hyperparameters, training=True, number_of_nodes: int = 6, chain_length: int = 3):
@@ -67,12 +65,13 @@ class TQL(Agent):
         max_q = None
         max_actions = []
         for edge in Utils.get_uncolored_edges(state):
-            if max_q is None or self.get_q(state, edge) > max_q:
-                max_q = self.get_q(state, edge)
+            q_val = self.get_q(state,edge)
+            if max_q is None or q_val > max_q:
+                max_q = q_val
                 max_actions = [edge]
-            elif self.get_q(state, edge) == max_q:
+            elif q_val == max_q:
                 max_actions.append(edge)
-            action = random.choice(max_actions)
+        action = random.choice(max_actions)
         return max_q,action
 
     def opp_move(self, state, action,c):

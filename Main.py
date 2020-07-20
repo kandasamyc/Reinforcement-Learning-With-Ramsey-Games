@@ -1,25 +1,14 @@
 from Utils import Utils
+from DQN import DQN
 from TQL import TQL
 
-player = TQL('Red',{"ALPHA":.5,"GAMMA":.1,'EPSILON':.5})
-opp = TQL('Blue',{"ALPHA":.5,"GAMMA":.1,'EPSILON':.5})
-u = Utils(player,opp,500)
-parameters = [
-    {
-        "name":"ALPHA",
-        "type":"range",
-        "bounds":[0.2,0.8]
-    },
-    {
-        "name":"GAMMA",
-        "type":"range",
-        "bounds":[0.01,0.5]
-    },
-    {
-        "name":"EPSILON",
-        "type":"range",
-        "bounds":[0.2,0.8]
-    },
+# player = DQN('Red', {"GAMMA": .1, 'EPSILON': .6,'HIDDEN_LAYER_SIZE':20,'BUFFER_SIZE':1000,'BATCH_SIZE':150,'TARGET_MODEL_SYNC':6,'LEARNING_RATE':1e-2,'EPSILON_DECAY':.9997})
+# opp = DQN('Blue', {"GAMMA": .1, 'EPSILON': .6,'HIDDEN_LAYER_SIZE':20,'BUFFER_SIZE':1000,'BATCH_SIZE':150,'TARGET_MODEL_SYNC':6,'LEARNING_RATE':1e-2,'EPSILON_DECAY':.9997})
+# u = Utils(player, opp, 30)
+# u.train()
 
-]
-print(u.optimize_training(parameters))
+player = TQL('Red', {"GAMMA": .1, 'EPSILON': .6, 'ALPHA':.6})
+opp = TQL('Red', {"GAMMA": .1, 'EPSILON': .6, 'ALPHA':.6})
+u = Utils(player, opp, 3000)
+u.train()
+
