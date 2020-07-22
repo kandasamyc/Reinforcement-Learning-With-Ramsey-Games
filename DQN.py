@@ -9,9 +9,9 @@ from collections import deque
 class QNetwork(torch.nn.Module):
     def __init__(self, board_size, hidden_layer_size):
         super(QNetwork, self).__init__()
-        self.input = torch.nn.Linear(board_size ** 2, hidden_layer_size)
+        self.input = torch.nn.Linear(int((board_size*(board_size-1)) / 2), hidden_layer_size)
         self.l2 = torch.nn.Linear(hidden_layer_size, hidden_layer_size)
-        self.output = torch.nn.Linear(hidden_layer_size, board_size ** 2)
+        self.output = torch.nn.Linear(hidden_layer_size, int((board_size*(board_size-1)) / 2))
 
     def forward(self, x):
         y = torch.nn.functional.relu(self.input(x))
@@ -23,11 +23,11 @@ class QNetwork(torch.nn.Module):
 class DQN(Agent):
     def __init__(self, color, hyperparameters, training=True, number_of_nodes: int = 6, chain_length: int = 3):
         super(DQN, self).__init__(color, hyperparameters)
-        self.q_network = QNetwork(number_of_nodes,hyperparameters['HIDDEN_LAYER_SIZE'])
-        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=hyperparameters['LEARNING_RATE'])
+        self.q_network = QNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE'])
+        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=hyperparameters['LEARNING_RATE'],amsgrad=True)
         self.loss_fn = torch.nn.MSELoss(reduction='sum')
         self.q_network.apply(Utils.weight_initialization)
-        self.target_network = QNetwork(number_of_nodes,hyperparameters['HIDDEN_LAYER_SIZE'])
+        self.target_network = QNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE'])
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.state = Utils.make_graph(number_of_nodes)
         self.chain_length = chain_length
@@ -71,28 +71,27 @@ class DQN(Agent):
     def update_q(self, state, action, reward, color=None):
         if color is None:
             color = self.color
-        self.experience_buffer.append((torch.flatten(Utils.weighted_adj(state, color)), action, reward,
-                                       torch.flatten(
-                                           Utils.weighted_adj(Utils.transition(state, color, action), color))))
+        self.experience_buffer.append((Utils.weighted_adj(state, color), action, reward,
+                                       Utils.weighted_adj(Utils.transition(state, color, action), color)))
         self.update_count += 1
         if len(self.experience_buffer) > self.hyperparameters['BATCH_SIZE']:
             sample = random.sample(self.experience_buffer, self.hyperparameters['BATCH_SIZE'])
-            training_input = torch.empty(self.hyperparameters['BATCH_SIZE'], self.number_of_nodes**2,
+            training_input = torch.empty(self.hyperparameters['BATCH_SIZE'], int((self.number_of_nodes*(self.number_of_nodes-1)) / 2),
                                          dtype=torch.float, requires_grad=True)
-            training_output = torch.empty(self.hyperparameters['BATCH_SIZE'], self.number_of_nodes**2,
+            training_output = torch.empty(self.hyperparameters['BATCH_SIZE'], int((self.number_of_nodes*(self.number_of_nodes-1)) / 2),
                                           dtype=torch.float, requires_grad=True)
             mem_count = 0
             current_states = torch.stack([exp[0] for exp in sample])
             new_states = torch.stack([exp[3] for exp in sample])
             current_qs = self.q_network.forward(current_states)
             with torch.no_grad():
-                new_qs_max = torch.max(self.target_network.forward(new_states),1)
+                new_qs_max = torch.max(self.target_network.forward(new_states), 1)
             for mem in sample:
                 s, a, r, ns = mem
                 max_q = new_qs_max[0][mem_count].item()
                 with torch.no_grad():
                     output = current_qs[mem_count].detach().clone().requires_grad_(True)
-                    output[a[0] * self.number_of_nodes + a[1]] = r + self.hyperparameters['GAMMA'] * max_q
+                    output[int((a[0] * (self.number_of_nodes - 1) + a[1] - (a[0] * (a[0] + 1)) / 2) - 1)] = r + self.hyperparameters['GAMMA'] * max_q
                     training_input[mem_count] = current_qs[mem_count]
                     training_output[mem_count] = output
                 mem_count += 1
@@ -105,8 +104,8 @@ class DQN(Agent):
                 self.target_network.load_state_dict(self.q_network.state_dict())
 
     def get_q(self, state, action):
-        q_val = self.q_network.forward(torch.flatten(Utils.weighted_adj(state, self.color)))[
-            action[0] * self.number_of_nodes + action[1]].item()
+        action_index = int((action[0] * (self.number_of_nodes - 1) + action[1] - (action[0] * (action[0] + 1)) / 2) - 1)
+        q_val = self.q_network.forward(Utils.weighted_adj(state, self.color))[action_index].item()
         return q_val
 
     def get_max_q(self, state):
@@ -115,7 +114,6 @@ class DQN(Agent):
             return 0, None
         max_q = None
         max_actions = []
-        mqs = torch.max(self.q_network(torch.flatten(Utils.weighted_adj(state, self.color))))
         for edge in Utils.get_uncolored_edges(state):
             if max_q is None or self.get_q(state, edge) > max_q:
                 max_q = self.get_q(state, edge)
@@ -139,11 +137,11 @@ class DQN(Agent):
 
     def hard_reset(self):
         self.reset()
-        self.q_network = QNetwork(self.number_of_nodes,self.hyperparameters['HIDDEN_LAYER_SIZE'])
+        self.q_network = QNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
         self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=self.hyperparameters['LEARNING_RATE'])
-        self.loss_fn = torch.nn.MSELoss(reduction='sum')
+        self.loss_fn = torch.nn.MSELoss(reduction='mean')
         self.q_network.apply(Utils.weight_initialization)
-        self.target_network = QNetwork(self.number_of_nodes,self.hyperparameters['HIDDEN_LAYER_SIZE'])
+        self.target_network = QNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.epoch = 0
         self.wins = 0

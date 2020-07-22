@@ -4,8 +4,9 @@ import ax
 from tqdm import tqdm
 import torch
 from torch import nn
-from itertools import permutations
+from itertools import combinations
 import igraph as ig
+import numpy as np
 
 colors = {'Red':2,'Blue':-1}
 
@@ -48,8 +49,8 @@ class Utils:
 
     @staticmethod
     def weighted_adj(G: ig.Graph,color:str):
-        w_adj = G.get_adjacency(attribute='weight')
-        return torch.tensor(list(w_adj),dtype=torch.float)*colors[color]
+        w_adj = G.get_adjacency(attribute='weight',type=ig.GET_ADJACENCY_UPPER)
+        return torch.tensor(list(w_adj),dtype=torch.float)[np.triu_indices(G.vcount(),1)]*colors[color]
 
     @staticmethod
     def new_edge(G: ig.Graph, color: str, edge: tuple):
@@ -86,7 +87,7 @@ class Utils:
     @staticmethod
     def get_uncolored_edges(G: ig.Graph):
         """Returns the edges in the graph that have not been colored"""
-        uncolored_edges = set(permutations([i for i in range(G.vcount())],2)) - set(G.get_edgelist())
+        uncolored_edges = set(combinations([i for i in range(G.vcount())],2)) - set(G.get_edgelist())
         return uncolored_edges
 
     @staticmethod
