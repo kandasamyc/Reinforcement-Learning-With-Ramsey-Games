@@ -1,6 +1,5 @@
 from torch.utils.tensorboard import SummaryWriter
 
-HP_LIST = ["Epsilon", "Gamma", "Learning Rate", "Target Model Update Frequency", "Batch Size", "Memory Size"]
 
 
 class Agent(object):
@@ -38,3 +37,9 @@ class Agent(object):
             comment += p_name + "=" + str(param) + " "
         comment = " " + comment.strip() + str(self.color)
         self.writer = SummaryWriter(comment=comment)
+
+    def write_MCTS_info(self):
+        self.writer.add_scalar('Win Rate', self.wins/self.epoch, self.epoch)
+        self.writer.add_scalar('Move Time', self.avg_move_time, self.epoch)
+        self.writer.add_scalar('Number of Moves', self.number_of_moves, self.epoch)
+        self.writer.flush()
