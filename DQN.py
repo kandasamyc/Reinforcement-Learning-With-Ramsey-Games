@@ -9,9 +9,9 @@ from collections import deque
 class QNetwork(torch.nn.Module):
     def __init__(self, board_size, hidden_layer_size):
         super(QNetwork, self).__init__()
-        self.input = torch.nn.Linear(int((board_size*(board_size-1)) / 2), hidden_layer_size)
+        self.input = torch.nn.Linear(int((board_size * (board_size - 1)) / 2), hidden_layer_size)
         self.l2 = torch.nn.Linear(hidden_layer_size, hidden_layer_size)
-        self.output = torch.nn.Linear(hidden_layer_size, int((board_size*(board_size-1)) / 2))
+        self.output = torch.nn.Linear(hidden_layer_size, int((board_size * (board_size - 1)) / 2))
 
     def forward(self, x):
         y = torch.nn.functional.relu(self.input(x))
@@ -24,7 +24,8 @@ class DQN(Agent):
     def __init__(self, color, hyperparameters, training=True, number_of_nodes: int = 6, chain_length: int = 3):
         super(DQN, self).__init__(color, hyperparameters)
         self.q_network = QNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE'])
-        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=hyperparameters['LEARNING_RATE'],amsgrad=True)
+        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=hyperparameters['LEARNING_RATE'],
+                                          amsgrad=True)
         self.loss_fn = torch.nn.MSELoss(reduction='sum')
         self.q_network.apply(Utils.weight_initialization)
         self.target_network = QNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE'])
@@ -76,21 +77,23 @@ class DQN(Agent):
         self.update_count += 1
         if len(self.experience_buffer) > self.hyperparameters['BATCH_SIZE']:
             sample = random.sample(self.experience_buffer, self.hyperparameters['BATCH_SIZE'])
-            training_input = torch.empty(self.hyperparameters['BATCH_SIZE'], int((self.number_of_nodes*(self.number_of_nodes-1)) / 2),
+            training_input = torch.empty(self.hyperparameters['BATCH_SIZE'],
+                                         int((self.number_of_nodes * (self.number_of_nodes - 1)) / 2),
                                          dtype=torch.float, requires_grad=True)
-            training_output = torch.empty(self.hyperparameters['BATCH_SIZE'], int((self.number_of_nodes*(self.number_of_nodes-1)) / 2),
+            training_output = torch.empty(self.hyperparameters['BATCH_SIZE'],
+                                          int((self.number_of_nodes * (self.number_of_nodes - 1)) / 2),
                                           dtype=torch.float, requires_grad=True)
             mem_count = 0
             current_states = torch.stack([exp[0] for exp in sample])
             new_states = torch.stack([exp[3] for exp in sample])
             current_qs = self.q_network.forward(current_states)
+            m_current_qs = current_qs.detach_().clone().requires_grad_(True)
             with torch.no_grad():
                 new_qs_max = torch.max(self.target_network.forward(new_states), 1)
-            for mem in sample:
+            for mem, max_q, output in zip(sample, new_qs_max[0], m_current_qs):
                 s, a, r, ns = mem
-                max_q = new_qs_max[0][mem_count].item()
+                max_q = max_q.item()
                 with torch.no_grad():
-                    output = current_qs[mem_count].detach().clone().requires_grad_(True)
                     output[int((a[0] * (self.number_of_nodes - 1) + a[1] - (a[0] * (a[0] + 1)) / 2) - 1)] = r + self.hyperparameters['GAMMA'] * max_q
                     training_input[mem_count] = current_qs[mem_count]
                     training_output[mem_count] = output
@@ -110,11 +113,12 @@ class DQN(Agent):
 
     def get_max_q(self, state):
         # Getting max Q-value
-        if len(Utils.get_uncolored_edges(state)) < 1:
+        u_es = Utils.get_uncolored_edges(state)
+        if len(u_es) < 1:
             return 0, None
         max_q = None
         max_actions = []
-        for edge in Utils.get_uncolored_edges(state):
+        for edge in u_es:
             if max_q is None or self.get_q(state, edge) > max_q:
                 max_q = self.get_q(state, edge)
                 max_actions = [edge]
@@ -146,3 +150,16 @@ class DQN(Agent):
         self.epoch = 0
         self.wins = 0
         self.writer.close()
+
+    def store(self):
+        self.save_model(self.q_network, self.target_network, self.optimizer)
+
+    def open(self,path):
+      checkpoint = torch.load(path)
+      self.q_network.load_state_dict(checkpoint['q_model_state_dict'])
+      self.target_network.load_state_dict(checkpoint['target_model_state_dict'])
+      self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+      self.epoch = checkpoint['epoch']
+      self.loss = checkpoint['loss']
+
+

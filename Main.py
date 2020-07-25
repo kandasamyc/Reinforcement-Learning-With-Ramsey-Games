@@ -7,8 +7,10 @@ player = DQN('Red', {"GAMMA": .17, 'EPSILON': .553, 'HIDDEN_LAYER_SIZE': 27, 'BU
                      'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .015, 'EPSILON_DECAY': .99977})
 opp = DQN('Blue', {"GAMMA": .17, 'EPSILON': .553, 'HIDDEN_LAYER_SIZE': 27, 'BUFFER_SIZE': 220, 'BATCH_SIZE': 69,
                      'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .015, 'EPSILON_DECAY': .99977})
-u = Utils(player, opp, 7000)
+u = Utils(player, opp, 500)
 u.train()
+player.store()
+opp.store()
 # print(u.optimize_training([
 #     {
 #         'name': 'GAMMA',

@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 from Agent import Agent
 import ax
 from tqdm import tqdm
@@ -7,10 +6,10 @@ from torch import nn
 from itertools import combinations
 import igraph as ig
 import numpy as np
+import datetime
 
-colors = {'Red':2,'Blue':-1}
+colors = {'Red':1,'Blue':-1}
 
-# noinspection PyUnresolvedReferences
 class Utils:
 
     def __init__(self, player: Agent, adversary: Agent, num_of_games: int = 3000):
@@ -34,18 +33,16 @@ class Utils:
         return None
 
     @staticmethod
-    def display_graph(G: ig.Graph, text: bool = True):
+    def display_graph(G: ig.Graph, text: bool = False):
         """Draws the graph with colored edges, If text is true it returns a modified adjacency matrix, otherwise shows it graphically and returns None"""
-        # if not text:
-        #     all_edges = G.edges
-        #     colors = [G[u][v]['color'] for u, v in all_edges]
-        #     pos = nx.circular_layout(G)
-        #     nx.draw(G, pos=pos, edges=all_edges, edge_color=colors, node_color=["gray"] * nx.number_of_nodes(G),
-        #             with_labels=True)
-        #     plt.show()
-        #     return None
-        # else:
-        #     return list(Utils.weighted_adj(G))
+        if not text:
+            layout = G.layout('circle')
+            G.vs['label'] = G.vs['name']
+            color_dict = {1:'red',-1:'blue'}
+            G.es['color'] = [color_dict[weight] for weight in G.es['weight']]
+            ig.plot(G,f'games/{datetime.datetime.now()}',layout=layout)
+        else:
+            return G.summary()
 
     @staticmethod
     def weighted_adj(G: ig.Graph,color:str):
@@ -73,7 +70,7 @@ class Utils:
     @staticmethod
     def make_graph(nodes: int):
         G = ig.Graph()
-        G.es['weight'] = 1.0
+        G.es['weight'] = 0.0
         G.add_vertices([i for i in range(0, nodes)])
         return G
 
@@ -108,7 +105,7 @@ class Utils:
         for game_num in tqdm(range(self.number_of_games)):
             finished = False
             while not finished:
-                finished = self.player.move(self.adversary)  # player makes move
+                finished = self.player.move(self.adversary) # player makes move
                 if finished:
                     break
                 finished = self.adversary.move(self.player)  # adversary makes move
