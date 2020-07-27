@@ -1,16 +1,19 @@
 from Utils import Utils
 from DQN import DQN
 from TQL import TQL
+from MCTS import MCTSAgent
+from GQN import GQN
+import math
 
 
-player = DQN('Red', {"GAMMA": .17, 'EPSILON': .553, 'HIDDEN_LAYER_SIZE': 27, 'BUFFER_SIZE': 220, 'BATCH_SIZE': 69,
+player = GQN('Red', {"GAMMA": .17, 'EPSILON': .553, 'HIDDEN_LAYER_SIZE': 27, 'BUFFER_SIZE': 220, 'BATCH_SIZE': 69,
                      'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .015, 'EPSILON_DECAY': .99977})
-opp = DQN('Blue', {"GAMMA": .17, 'EPSILON': .553, 'HIDDEN_LAYER_SIZE': 27, 'BUFFER_SIZE': 220, 'BATCH_SIZE': 69,
+opp = GQN('Blue', {"GAMMA": .17, 'EPSILON': .553, 'HIDDEN_LAYER_SIZE': 27, 'BUFFER_SIZE': 220, 'BATCH_SIZE': 69,
                      'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .015, 'EPSILON_DECAY': .99977})
-u = Utils(player, opp, 500)
+u = Utils(player, opp, 7000)
 u.train()
-player.store()
-opp.store()
+# player.store()
+# opp.store()
 # print(u.optimize_training([
 #     {
 #         'name': 'GAMMA',
@@ -73,3 +76,9 @@ opp.store()
 #           'bounds': [.4, .8]
 #       },
 # ]))
+
+
+# player = MCTSAgent({'Trials':50,'C':math.sqrt(2)},'Red',3,6)
+# adversary = MCTSAgent({'Trials':50,'C':math.sqrt(2)},'Blue',3,6)
+# u = Utils(player,adversary,50)
+# u.train()

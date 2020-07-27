@@ -7,6 +7,7 @@ from itertools import combinations
 import igraph as ig
 import numpy as np
 import datetime
+import torch_geometric
 
 colors = {'Red':1,'Blue':-1}
 
@@ -92,6 +93,15 @@ class Utils:
         if type(m) == nn.Linear:
             nn.init.xavier_uniform_(m.weight)
             m.bias.data.fill_(0.01)
+
+    @staticmethod
+    def graph_to_data(G:ig.Graph,color:str):
+        edge_index = torch.tensor([*[list(e) for e in G.get_edgelist()],*[list(e).__reversed__() for e in G.get_edgelist()]],dtype=torch.long).t().contiguous()
+        x = list(G.get_adjacency(attribute='weight'))*colors[color]
+        for r in range(len(x)):
+            del x[r][r]
+        return torch_geometric.data.Data(edge_index=edge_index,x=torch.tensor(x,dtype=torch.float))
+
 
     def train(self, parametrization=None):
         """Given two Agents, the method will train them against each other until number of games is reached, by default 3000 games"""

@@ -25,7 +25,7 @@ class DQN(Agent):
         super(DQN, self).__init__(color, hyperparameters)
         self.q_network = QNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE'])
         self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=hyperparameters['LEARNING_RATE'],
-                                          amsgrad=True)
+                                          amsgrad=False)
         self.loss_fn = torch.nn.MSELoss(reduction='sum')
         self.q_network.apply(Utils.weight_initialization)
         self.target_network = QNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE'])
@@ -142,7 +142,7 @@ class DQN(Agent):
     def hard_reset(self):
         self.reset()
         self.q_network = QNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
-        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=self.hyperparameters['LEARNING_RATE'])
+        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=self.hyperparameters['LEARNING_RATE'],amsgrad=False)
         self.loss_fn = torch.nn.MSELoss(reduction='mean')
         self.q_network.apply(Utils.weight_initialization)
         self.target_network = QNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])

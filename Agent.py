@@ -1,7 +1,6 @@
 from torch.utils.tensorboard import SummaryWriter
 from torch import save
-import datetime
-
+import time
 
 class Agent(object):
 
@@ -53,4 +52,4 @@ class Agent(object):
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': self.loss,
         },
-        f'models/{self.comment} {datetime.datetime.now()}.pth')
+        f'models/{self.comment.strip()},{time.strftime("%Y %m %d-%H %M %S")}.pth')

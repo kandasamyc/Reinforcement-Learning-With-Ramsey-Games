@@ -4,13 +4,29 @@ from Utils import Utils
 from time import time_ns
 import torch
 from collections import deque
-import torch_geometric
+from torch_geometric.nn import GCNConv
 
-class GCN(Agent): #TODO: Write method to convert igraph to networkx to a readable dataset by torch_geometric
+class GQNetwork(torch.nn.Module):
+    def __init__(self, board_size, hidden_layer_size):
+        super(GQNetwork, self).__init__()
+        self.input = GCNConv(board_size-1,board_size-1)
+        self.l2 = GCNConv(board_size-1, board_size-1)
+        self.l3 = torch.nn.Linear(board_size-1,hidden_layer_size)
+        self.output = torch.nn.Linear(hidden_layer_size, int((board_size * (board_size - 1)) / 2))
+
+    def forward(self, data):
+        x,edge_index = data.x,data.edge_index
+
+        y = torch.nn.functional.relu(self.input(x,edge_index))
+        y = torch.nn.functional.relu(self.l2(y,edge_index))
+        y = torch.nn.functional.relu(self.l3(y))
+        y = torch.nn.functional.relu(self.output(y))
+        return y
+
+class GQN(Agent):
     def __init__(self, color, hyperparameters, training=True, number_of_nodes: int = 6, chain_length: int = 3):
-        #TODO: Set up torch_geometric GCNConv Model
-        super(GCN, self).__init__(color, hyperparameters)
-        self.q_network = QNetwork(number_of_nodes,hyperparameters['HIDDEN_LAYER_SIZE'])
+        super(GQN, self).__init__(color, hyperparameters)
+        self.q_network = GQNetwork(number_of_nodes,hyperparameters['HIDDEN_LAYER_SIZE'])
         self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=hyperparameters['LEARNING_RATE'])
         self.loss_fn = torch.nn.MSELoss(reduction='sum')
         self.q_network.apply(Utils.weight_initialization)
@@ -58,9 +74,9 @@ class GCN(Agent): #TODO: Write method to convert igraph to networkx to a readabl
     def update_q(self, state, action, reward, color=None):
         if color is None:
             color = self.color
-        self.experience_buffer.append((torch.flatten(Utils.weighted_adj(state, color)), action, reward,
+        self.experience_buffer.append((torch.flatten(Utils.graph_to_data(state, color)), action, reward,
                                        torch.flatten(
-                                           Utils.weighted_adj(Utils.transition(state, color, action), color))))
+                                           Utils.graph_to_data(Utils.transition(state, color, action), color))))
         self.update_count += 1
         if len(self.experience_buffer) > self.hyperparameters['BATCH_SIZE']:
             sample = random.sample(self.experience_buffer, self.hyperparameters['BATCH_SIZE'])
@@ -92,7 +108,7 @@ class GCN(Agent): #TODO: Write method to convert igraph to networkx to a readabl
                 self.target_network.load_state_dict(self.q_network.state_dict())
 
     def get_q(self, state, action):
-        q_val = self.q_network.forward(torch.flatten(Utils.weighted_adj(state, self.color)))[
+        q_val = self.q_network.forward(torch.flatten(Utils.graph_to_data(state, self.color)))[
             action[0] * self.number_of_nodes + action[1]].item()
         return q_val
 
@@ -102,7 +118,7 @@ class GCN(Agent): #TODO: Write method to convert igraph to networkx to a readabl
             return 0, None
         max_q = None
         max_actions = []
-        mqs = torch.max(self.q_network(torch.flatten(Utils.weighted_adj(state, self.color))))
+        mqs = torch.max(self.q_network(torch.flatten(Utils.graph_to_data(state, self.color))))
         for edge in Utils.get_uncolored_edges(state):
             if max_q is None or self.get_q(state, edge) > max_q:
                 max_q = self.get_q(state, edge)

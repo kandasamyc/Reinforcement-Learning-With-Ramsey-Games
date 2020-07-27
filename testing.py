@@ -41,16 +41,14 @@ def detect_cycle2(G: ig.Graph, chain_length: int):
 # g.add_edge(2, 3, color=['red'])
 # g.add_edge(3, 1, color=['red'])
 # g.add_edge(5, 4, color=['blue'])
-# i = ig.Graph()
-# i.add_vertices([i for i in range(6)])
-# i.add_edges([(1, 2), (2, 3), (3, 1), (5, 4)])
-# print(list(combinations([i for i in range(6)], 2)))
-# print(i.get_edgelist())
-# i.es['weight'] = 1
-# i[1, 2] = 2
-# i[2, 3] = 2
-# i[3, 1] = 2
-# i[5, 4] = -1
+i = ig.Graph()
+i.add_vertices([i for i in range(6)])
+i.add_edges([(1, 2), (2, 3), (3, 1), (5, 4)])
+i.es['weight'] = 1
+i[1, 2] = 2
+i[2, 3] = 2
+i[3, 1] = 2
+i[5, 4] = -1
 # print(time_ns())
 # y = torch.tensor(list(i.get_adjacency(type=ig.GET_ADJACENCY_UPPER,attribute='weight')))[np.triu_indices(6,k=1)]
 # print(time_ns())
@@ -67,5 +65,9 @@ def detect_cycle2(G: ig.Graph, chain_length: int):
 # print((5-count),x+(5-count))
 # print(time_ns())
 
-for i in range(50):
-    print((i*(i-1)/2))
+print([*[list(e) for e in i.get_edgelist()],*[list(list(e).__reversed__()) for e in i.get_edgelist()]])
+x = list(i.get_adjacency(attribute='weight'))
+print(x)
+for r in range(len(x)):
+    del x[r][r]
+print(x)
