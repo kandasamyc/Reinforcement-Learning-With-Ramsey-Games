@@ -97,10 +97,13 @@ class Utils:
     @staticmethod
     def graph_to_data(G:ig.Graph,color:str):
         edge_index = torch.tensor([*[list(e) for e in G.get_edgelist()],*[list(e).__reversed__() for e in G.get_edgelist()]],dtype=torch.long).t().contiguous()
-        x = list(G.get_adjacency(attribute='weight'))*colors[color]
+        if edge_index.size()[0] == 0:
+            edge_index = torch.tensor([[],[]],dtype=torch.long)
+        x = list(G.get_adjacency(attribute='weight'))
         for r in range(len(x)):
             del x[r][r]
-        return torch_geometric.data.Data(edge_index=edge_index,x=torch.tensor(x,dtype=torch.float))
+        x = torch.tensor(x,dtype=torch.float)*colors[color]
+        return torch_geometric.data.Data(edge_index=edge_index,x=x)
 
 
     def train(self, parametrization=None):
