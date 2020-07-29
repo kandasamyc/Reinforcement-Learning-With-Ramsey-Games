@@ -67,7 +67,6 @@ class MCTSGameTree:
                 in Utils.get_uncolored_edges(self.state)}
 
     def UCTScore(self):
-        #TODO: Heuristics
         return self.wins / self.times_visited + self.c * math.sqrt(
             math.log(self.parent.times_visited) / self.times_visited)
 

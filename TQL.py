@@ -13,6 +13,7 @@ class TQL(Agent):
         self.color = color
         self.hyperparameters = hyperparameters
         self.training = training
+        self.number_of_nodes = number_of_nodes
 
     def move(self, opponent):
         # Update network based on the state the opponent just put the environment in

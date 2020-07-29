@@ -6,12 +6,13 @@ from GQN import GQN
 import math
 
 
-player = GQN('Red', {"GAMMA": .17, 'EPSILON': .553, 'HIDDEN_LAYER_SIZE': 27, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
+player = DQN('Red', {"GAMMA": .17, 'EPSILON': .553, 'HIDDEN_LAYER_SIZE': 27, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
                      'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .015, 'EPSILON_DECAY': .99977})
-opp = GQN('Blue', {"GAMMA": .17, 'EPSILON': .553, 'HIDDEN_LAYER_SIZE': 27, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
+opp = DQN('Blue', {"GAMMA": .17, 'EPSILON': .553, 'HIDDEN_LAYER_SIZE': 27, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
                      'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .015, 'EPSILON_DECAY': .99977})
-u = Utils(player, opp, 7000)
+u = Utils(player, opp, 200)
 u.train()
+Utils.play(player,opp)
 # player.store()
 # opp.store()
 # print(u.optimize_training([

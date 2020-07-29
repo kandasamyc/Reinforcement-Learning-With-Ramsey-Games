@@ -6,7 +6,7 @@ from torch import nn
 from itertools import combinations
 import igraph as ig
 import numpy as np
-import datetime
+import time
 import torch_geometric
 
 colors = {'Red':1,'Blue':-1}
@@ -39,9 +39,11 @@ class Utils:
         if not text:
             layout = G.layout('circle')
             G.vs['label'] = G.vs['name']
+            G.vs['color'] = ['grey' for i in range(G.vcount())]
             color_dict = {1:'red',-1:'blue'}
             G.es['color'] = [color_dict[weight] for weight in G.es['weight']]
-            ig.plot(G,f'games/{datetime.datetime.now()}',layout=layout)
+            ig.plot(G, layout=layout)
+            ig.plot(G,f'games/{time.strftime("%Y %m %d-%H %M %S")}.png',layout=layout)
         else:
             return G.summary()
 
@@ -95,7 +97,7 @@ class Utils:
             m.bias.data.fill_(0.01)
 
     @staticmethod
-    def graph_to_data(G:ig.Graph,color:str):
+    def graph_to_data(G:ig.Graph,color:str,device:torch.device):
         edge_index = torch.tensor([*[list(e) for e in G.get_edgelist()],*[list(e).__reversed__() for e in G.get_edgelist()]],dtype=torch.long).t().contiguous()
         if edge_index.size()[0] == 0:
             edge_index = torch.tensor([[],[]],dtype=torch.long)
@@ -103,7 +105,11 @@ class Utils:
         for r in range(len(x)):
             del x[r][r]
         x = torch.tensor(x,dtype=torch.float)*colors[color]
-        return torch_geometric.data.Data(edge_index=edge_index,x=x)
+        return torch_geometric.data.Data(edge_index=edge_index,x=x).to(device)
+
+    @staticmethod
+    def heuristic_state_score(state:ig.Graph):
+        #TODO: Write Scoring
 
 
     def train(self, parametrization=None):
@@ -147,16 +153,72 @@ class Utils:
         return best_parameters
 
     @staticmethod
-    def play(player: Agent, goes_first: bool = True):
+    def play(player: Agent,opp:Agent, goes_first: bool = True):
         """Allows the user to play a game against an agent, agent will go first by default"""
         finished = False
-        while not finished:
-            if goes_first:
-                finished = player.move()
-            else:
-                good_input = False
-                while not good_input:
-                    starting_node = input("Enter a starting node for an edge: ")
-                    ending_node = input("Enter an ending node for an edge: ")
+        replay = True
+        agent = player
+        agent.reset()
+        turn = True
+        while replay:
+            state = Utils.make_graph(agent.number_of_nodes)
+            while not finished:
+                if goes_first:
+                    if turn:
+                        max_q, action = agent.get_max_q(state)
+                        state = Utils.transition(state, agent.color, action)
+                    else:
+                        Utils.display_graph(state)
+                        print(f'Enter index, starting from 1, of edge to color')
+                        edge = sorted(list(Utils.get_uncolored_edges(state)))[
+                            int(input(f'Edges: {sorted(list(Utils.get_uncolored_edges(state)))} ')) - 1]
+                        state = Utils.transition(state, 'Red' if agent.color == 'Blue' else 'Blue', edge)
+                else:
+                    if turn:
+                        Utils.display_graph(state)
+                        print(f'Enter index, starting from 1, of edge to color')
+                        edge = sorted(list(Utils.get_uncolored_edges(state)))[int(input(f'Edges: {sorted(list(Utils.get_uncolored_edges(state)))} '))-1]
+                        state = Utils.transition(state,'Red' if agent.color == 'Blue' else 'Blue', edge)
+                    else:
+                        max_q, action = agent.get_max_q(state)
+                        state = Utils.transition(state, agent.color, action)
 
-        # TODO: When finished with one Q-Learning model, use those methods to write this
+                turn = not turn
+
+                if Utils.reward(state, agent.chain_length, agent.color) == 1:
+                    Utils.display_graph(state)
+                    print("Player Won!")
+                    finished = True
+                elif Utils.reward(state, agent.chain_length, agent.color) == -1:
+                    Utils.display_graph(state)
+                    print("You Won!")
+                    finished = True
+                elif not Utils.get_uncolored_edges(state):
+                    print('Tie!')
+                    finished = True
+            while True:
+                r = input('Would you like to play again? [y/N] ')
+                if not r or r.lower() == 'n':
+                    replay = False
+                    finished = False
+                    break
+                elif r.lower() == 'y':
+                    replay = True
+                    finished = False
+                    break
+                else:
+                    print('Please enter y,n or nothing')
+            while True:
+                r = input('Would you like to switch colors? [y/N] ')
+                if not r or r.lower() == 'n':
+                    goes_first = goes_first
+                    break
+                elif r.lower() == 'y':
+                    goes_first = not goes_first
+                    if goes_first:
+                        agent = player
+                    else:
+                        agent = opp
+                    break
+                else:
+                    print('Please enter y,n or nothing')
