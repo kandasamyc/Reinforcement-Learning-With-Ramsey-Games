@@ -4,23 +4,67 @@ from Utils import Utils
 from time import time_ns
 import torch
 from collections import deque
-from torch_geometric.nn import GCNConv
+from torch_geometric.nn import GCNConv,EdgeConv
 
 
-class GQNetwork(torch.nn.Module):
+class GCQNetwork(torch.nn.Module):
     def __init__(self, board_size, hidden_layer_size):
-        super(GQNetwork, self).__init__()
+        super(GCQNetwork, self).__init__()
         self.input = GCNConv(board_size - 1, board_size - 1)
         self.l2 = GCNConv(board_size - 1, board_size-1)
         self.l3 = GCNConv(board_size - 1, board_size - 1)
         self.l4 = torch.nn.Linear(board_size*(board_size - 1), hidden_layer_size)
         self.output = torch.nn.Linear(hidden_layer_size, int((board_size * (board_size - 1)) / 2))
+        self.board_size = board_size
 
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
-        y = self.input(x, edge_index)
-        y = self.l2(y, edge_index)
-        y = self.l3(y,edge_index)
+        g1 = self.input(x, edge_index)
+        g2 = self.l2(g1, edge_index)
+        g3 = self.l3(g2,edge_index)
+
+        y = torch.flatten(g1+g2+g3)
+
+        y = torch.nn.functional.relu(torch.flatten(y))
+        y = torch.nn.functional.relu(self.l4(y))
+        y = torch.nn.functional.relu(self.output(y))
+        return y
+
+class EdgeQNetwork(torch.nn.Module):
+    def __init__(self, board_size, hidden_layer_size):
+        super(EdgeQNetwork, self).__init__()
+        inner_network = torch.nn.Sequential(
+            torch.nn.Linear(2*(board_size-1), 2*(board_size-1)),
+            torch.nn.Linear(2*(board_size-1), (board_size-1)),
+            torch.nn.Linear((board_size-1), (board_size-1)),
+        )
+        self.input = EdgeConv(torch.nn.Sequential(
+            torch.nn.Linear(2*(board_size-1), 2*(board_size-1)),
+            torch.nn.Linear(2*(board_size-1), (board_size-1)),
+            torch.nn.Linear((board_size-1), (board_size-1)),
+        ))
+        self.l2 = EdgeConv(torch.nn.Sequential(
+            torch.nn.Linear(2*(board_size-1), 2*(board_size-1)),
+            torch.nn.Linear(2*(board_size-1), (board_size-1)),
+            torch.nn.Linear((board_size-1), (board_size-1)),
+        ))
+        self.l3 = EdgeConv(torch.nn.Sequential(
+            torch.nn.Linear(2*(board_size-1), 2*(board_size-1)),
+            torch.nn.Linear(2*(board_size-1), (board_size-1)),
+            torch.nn.Linear((board_size-1), (board_size-1)),
+        ))
+        self.l4 = torch.nn.Linear(board_size*(board_size - 1), hidden_layer_size)
+        self.output = torch.nn.Linear(hidden_layer_size, int((board_size * (board_size - 1)) / 2))
+        self.board_size = board_size
+
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
+        g1 = self.input(x, edge_index)
+        g2 = self.l2(g1, edge_index)
+        g3 = self.l3(g2, edge_index)
+
+        y = torch.flatten(g1 + g2 + g3)
+
         y = torch.nn.functional.relu(torch.flatten(y))
         y = torch.nn.functional.relu(self.l4(y))
         y = torch.nn.functional.relu(self.output(y))
@@ -30,11 +74,11 @@ class GQN(Agent):
     def __init__(self, color, hyperparameters, training=True, number_of_nodes: int = 6, chain_length: int = 3):
         super(GQN, self).__init__(color, hyperparameters)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.q_network = GQNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE']).to(self.device)
+        self.q_network = EdgeQNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE']).to(self.device)
         self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=hyperparameters['LEARNING_RATE'])
-        self.loss_fn = torch.nn.MSELoss(reduction='sum')
+        self.loss_fn = torch.nn.MSELoss(reduction='mean')
         self.q_network.apply(Utils.weight_initialization)
-        self.target_network = GQNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE']).to(self.device)
+        self.target_network = EdgeQNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE']).to(self.device)
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.state = Utils.make_graph(number_of_nodes)
         self.chain_length = chain_length
@@ -75,7 +119,6 @@ class GQN(Agent):
         else:
             return False
 
-    # TODO:Update forward mechanism
     def update_q(self, state, action, reward, color=None):
         if color is None:
             color = self.color
@@ -150,12 +193,23 @@ class GQN(Agent):
 
     def hard_reset(self):
         self.reset()
-        self.q_network = GQNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
+        self.q_network = EdgeQNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
         self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=self.hyperparameters['LEARNING_RATE'])
-        self.loss_fn = torch.nn.MSELoss(reduction='sum')
+        self.loss_fn = torch.nn.MSELoss(reduction='mean')
         self.q_network.apply(Utils.weight_initialization)
-        self.target_network = GQNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
+        self.target_network = EdgeQNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.epoch = 0
         self.wins = 0
         self.writer.close()
+
+    def store(self):
+        self.save_model(self.q_network, self.target_network, self.optimizer)
+
+    def open(self, path):
+        checkpoint = torch.load(path)
+        self.q_network.load_state_dict(checkpoint['q_model_state_dict'])
+        self.target_network.load_state_dict(checkpoint['target_model_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self.epoch = checkpoint['epoch']
+        self.loss = checkpoint['loss']

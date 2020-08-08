@@ -4,9 +4,15 @@ from time import time_ns
 import numpy as np
 import torch
 from itertools import combinations
-from GQN import GQNetwork
+from GQN import GCQNetwork
 from Utils import Utils
 import torch_geometric
+import csv
+
+d = {1:2,3:4}
+w = csv.writer(open("output.csv", "w"))
+for key, val in d.items():
+    w.writerow([key, val])
 
 
 def detect_cycle(G: nx.Graph, chain_length: int):
@@ -38,10 +44,10 @@ def detect_cycle2(G: ig.Graph, chain_length: int):
     return None
 
 
-g = nx.Graph()
-g.add_nodes_from([i for i in range(6)])
-t = GQNetwork(6,100)
-print(torch_geometric.utils.from_networkx(g))
+# g = nx.Graph()
+# g.add_nodes_from([i for i in range(6)])
+# t = GQNetwork(6,100)
+# print(torch_geometric.utils.from_networkx(g))
 # g.add_edge(1, 2, color=['red'])
 # g.add_edge(2, 3, color=['red'])
 # g.add_edge(3, 1, color=['red'])
@@ -79,10 +85,22 @@ print(torch_geometric.utils.from_networkx(g))
 # #     del x[r][r]
 # # print(x)
 #
-g = GQNetwork(6,100)
+# g = GQNetwork(6,100)
 f = Utils.make_graph(6)
 for edge in [(1,2),(2,4),(4,1)]:
     f = Utils.transition(f,'Red',edge)
 for edge in [(3,2),(1,5)]:
     f = Utils.transition(f,'Blue',edge)
-print(torch.max(g.forward(Utils.graph_to_data(f,'Red'))))
+m = torch.nn.Sequential(
+    torch.nn.Linear(10,10),
+    torch.nn.Linear(10,5),
+    torch.nn.Linear(5,5),
+)
+e = torch_geometric.nn.EdgeConv(m)
+d = Utils.graph_to_data(f,'Red',torch.device('cpu'))
+print(e.forward(d.x.float(),d.edge_index.long()))
+# f = Utils.graph_to_data(f,'Red',torch.device('cpu'))
+# gs = [f,f]
+# b = torch_geometric.data.Batch.from_data_list(gs)
+# print(g.forward_batch(b))
+

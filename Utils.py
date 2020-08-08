@@ -110,6 +110,7 @@ class Utils:
     @staticmethod
     def heuristic_state_score(state:ig.Graph):
         #TODO: Write Scoring
+        pass
 
 
     def train(self, parametrization=None):
@@ -130,6 +131,10 @@ class Utils:
                 finished = self.adversary.move(self.player)  # adversary makes move
             self.player.epoch += 1
             self.adversary.epoch += 1
+            if abs(self.player.number_of_moves-self.adversary.number_of_moves) > 1:
+                print("Violation of Moves")
+                print(self.player.state)
+                print(self.adversary.state)
             self.player.write_info()
             self.adversary.write_info()
             # self.player.write_network_info(

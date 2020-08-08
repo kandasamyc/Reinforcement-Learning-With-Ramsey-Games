@@ -5,18 +5,24 @@ from time import time_ns
 import torch
 from collections import deque
 
+ALPHA = .8
+
 
 class QNetwork(torch.nn.Module):
     def __init__(self, board_size, hidden_layer_size):
         super(QNetwork, self).__init__()
         self.input = torch.nn.Linear(int((board_size * (board_size - 1)) / 2), hidden_layer_size)
         self.l2 = torch.nn.Linear(hidden_layer_size, hidden_layer_size)
-        self.output = torch.nn.Linear(hidden_layer_size, int((board_size * (board_size - 1)) / 2))
+        self.l3 = torch.nn.Linear(hidden_layer_size, hidden_layer_size // 2)
+        self.l4 = torch.nn.Linear(hidden_layer_size // 2, hidden_layer_size // 2)
+        self.output = torch.nn.Linear(hidden_layer_size // 2, int((board_size * (board_size - 1)) / 2))
 
     def forward(self, x):
         y = torch.nn.functional.relu(self.input(x))
         y = torch.nn.functional.relu(self.l2(y))
-        y = torch.nn.functional.relu(self.output(y))
+        y = torch.nn.functional.relu(self.l3(y))
+        y = torch.nn.functional.relu(self.l4(y))
+        y = self.output(y)
         return y
 
 
@@ -61,9 +67,11 @@ class DQN(Agent):
         self.state = new_state
 
         # If its the end, return False, otherwise make an action
-        if len(Utils.get_uncolored_edges(self.state)) < 1 or Utils.reward(self.state, self.chain_length,
-                                                                          self.color) == 1:
-            self.wins += 1
+        if (r := Utils.reward(self.state, self.chain_length, self.color)) == 1 or len(
+                Utils.get_uncolored_edges(self.state)) < 1:
+            self.wins += r
+            if r == 0:
+                print("TIE")
             self.avg_move_time = (self.avg_move_time + (time_ns() - start_time)) / 2.0
             return True
         else:
@@ -94,7 +102,8 @@ class DQN(Agent):
                 s, a, r, ns = mem
                 max_q = max_q.item()
                 with torch.no_grad():
-                    output[int((a[0] * (self.number_of_nodes - 1) + a[1] - (a[0] * (a[0] + 1)) / 2) - 1)] = r + self.hyperparameters['GAMMA'] * max_q
+                    ind = int((a[0] * (self.number_of_nodes - 1) + a[1] - (a[0] * (a[0] + 1)) / 2) - 1)
+                    output[ind] = (1 - ALPHA) * (output[ind]) + ALPHA * (r + self.hyperparameters['GAMMA'] * max_q)
                     training_input[mem_count] = current_qs[mem_count]
                     training_output[mem_count] = output
                 mem_count += 1
@@ -142,7 +151,8 @@ class DQN(Agent):
     def hard_reset(self):
         self.reset()
         self.q_network = QNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
-        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=self.hyperparameters['LEARNING_RATE'],amsgrad=False)
+        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=self.hyperparameters['LEARNING_RATE'],
+                                          amsgrad=False)
         self.loss_fn = torch.nn.MSELoss(reduction='mean')
         self.q_network.apply(Utils.weight_initialization)
         self.target_network = QNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
@@ -154,12 +164,10 @@ class DQN(Agent):
     def store(self):
         self.save_model(self.q_network, self.target_network, self.optimizer)
 
-    def open(self,path):
-      checkpoint = torch.load(path)
-      self.q_network.load_state_dict(checkpoint['q_model_state_dict'])
-      self.target_network.load_state_dict(checkpoint['target_model_state_dict'])
-      self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-      self.epoch = checkpoint['epoch']
-      self.loss = checkpoint['loss']
-
-
+    def open(self, path):
+        checkpoint = torch.load(path)
+        self.q_network.load_state_dict(checkpoint['q_model_state_dict'])
+        self.target_network.load_state_dict(checkpoint['target_model_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self.epoch = checkpoint['epoch']
+        self.loss = checkpoint['loss']
