@@ -23,7 +23,7 @@ class TQL(Agent):
         # Update network based on the state the opponent just put the environment in
         start_time = time_ns()
         self.number_of_moves += 1
-        # self.hyperparameters['EPSILON'] *= self.hyperparameters['EPSILON_DECAY']
+        self.hyperparameters['EPSILON'] *= self.hyperparameters['EPSILON_DECAY']
         if random.random() < self.hyperparameters["EPSILON"] and self.training:
             self.action = random.choice(list(Utils.get_uncolored_edges(self.state)))
         else:
@@ -42,7 +42,7 @@ class TQL(Agent):
         if len(Utils.get_uncolored_edges(self.state)) < 1 or Utils.reward(self.state, self.chain_length,
                                                                           self.color) == 1:
             self.wins += 1
-            self.avg_move_time = (self.avg_move_time + (time_ns() - start_time)) / 2.0
+            self.avg_move_time = (self.avg_move_time*(self.number_of_moves-1) + (time_ns() - start_time)) / self.number_of_moves
             return True
         else:
             return False
@@ -83,7 +83,7 @@ class TQL(Agent):
 
     def opp_move(self, state, action, c):
         if self.training and self.action is not None:
-            reward = Utils.reward(state, self.chain_length, c)
+            reward = Utils.reward(Utils.transition(state, c, action), self.chain_length, self.color)
             self.update_q(state, action, reward, color=c)
         self.state = Utils.transition(state, c, action)
 

@@ -1,6 +1,8 @@
 from torch.utils.tensorboard import SummaryWriter
 from torch import save
 import time
+import tracemalloc
+import pandas
 
 class Agent(object):
 
@@ -17,6 +19,8 @@ class Agent(object):
         self.loss = 0
         self.number_of_moves = 0
         self.avg_move_time = 0
+        self.data = {}
+        tracemalloc.start()
 
     def write_info(self):
         self.writer.add_scalar('Loss', self.loss, self.epoch)
@@ -53,3 +57,11 @@ class Agent(object):
             'loss': self.loss,
         },
         f'models/{self.comment.strip()},{time.strftime("%Y %m %d-%H %M %S")}.pth')
+
+    def write_info_dict(self):
+        self.data[self.epoch] = [self.loss,self.wins/self.epoch,self.avg_move_time,self.number_of_moves,tracemalloc.get_traced_memory()[0]]
+
+    def save_dict(self):
+        df = pandas.DataFrame.from_dict(self.data)
+        df.to_pickle(f'saved_data/{self.comment.strip()},{time.strftime("%Y %m %d-%H %M %S")}.pkl.xz')
+        tracemalloc.stop()

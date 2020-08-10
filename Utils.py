@@ -23,6 +23,7 @@ class Utils:
     def detect_cycle(G: ig.Graph, chain_length: int):
         """Returns the color of a cycle of length chain_length if it exists, otherwise None"""
         cliques = list(G.cliques(min=chain_length))
+        cliques = [i for i in cliques if len(i) == chain_length]
         if len(cliques) < 1:
             return None
         else:
@@ -135,8 +136,8 @@ class Utils:
                 print("Violation of Moves")
                 print(self.player.state)
                 print(self.adversary.state)
-            self.player.write_info()
-            self.adversary.write_info()
+            self.player.write_info_dict()
+            self.adversary.write_info_dict()
             # self.player.write_network_info(
             #     [self.player.q_network.input,self.player.q_network.l2,self.player.q_network.output],
             #     ['Input','Hidden','Output']

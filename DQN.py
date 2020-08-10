@@ -138,7 +138,7 @@ class DQN(Agent):
 
     def opp_move(self, state, action, c):
         if self.training and self.action is not None:
-            reward = Utils.reward(state, self.chain_length, c)
+            reward = Utils.reward(Utils.transition(state, c, action), self.chain_length, self.color)
             self.update_q(state, action, reward, color=c)
         self.state = Utils.transition(state, c, action)
 
