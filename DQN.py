@@ -71,7 +71,8 @@ class DQN(Agent):
                 Utils.get_uncolored_edges(self.state)) < 1:
             self.wins += r
             if r == 0:
-                print("TIE")
+                Utils.display_graph(self.state)
+                raise Exception
             self.avg_move_time = (self.avg_move_time + (time_ns() - start_time)) / 2.0
             return True
         else:

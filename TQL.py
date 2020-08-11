@@ -39,9 +39,12 @@ class TQL(Agent):
         self.state = new_state
 
         # If its the end, return False, otherwise make an action
-        if len(Utils.get_uncolored_edges(self.state)) < 1 or Utils.reward(self.state, self.chain_length,
-                                                                          self.color) == 1:
-            self.wins += 1
+        if (r:=Utils.reward(self.state, self.chain_length,self.color)) == 1 or len(Utils.get_uncolored_edges(self.state)) < 1:
+            if r == 1:
+                self.wins += 1
+            else:
+                Utils.display_graph(self.state)
+                raise Exception
             self.avg_move_time = (self.avg_move_time*(self.number_of_moves-1) + (time_ns() - start_time)) / self.number_of_moves
             return True
         else:

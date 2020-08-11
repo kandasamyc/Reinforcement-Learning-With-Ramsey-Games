@@ -91,16 +91,10 @@ for edge in [(1,2),(2,4),(4,1)]:
     f = Utils.transition(f,'Red',edge)
 for edge in [(3,2),(1,5)]:
     f = Utils.transition(f,'Blue',edge)
-m = torch.nn.Sequential(
-    torch.nn.Linear(10,10),
-    torch.nn.Linear(10,5),
-    torch.nn.Linear(5,5),
-)
-e = torch_geometric.nn.EdgeConv(m)
-d = Utils.graph_to_data(f,'Red',torch.device('cpu'))
-print(e.forward(d.x.float(),d.edge_index.long()))
-# f = Utils.graph_to_data(f,'Red',torch.device('cpu'))
-# gs = [f,f]
-# b = torch_geometric.data.Batch.from_data_list(gs)
-# print(g.forward_batch(b))
+for edge in f.get_edgelist():
+    if f[edge[0],edge[1]] == 1:
+        f.delete_edges([edge])
+        f.add
+
+print(list(f.cliques(min=3)))
 

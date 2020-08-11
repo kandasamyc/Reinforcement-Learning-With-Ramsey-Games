@@ -1,6 +1,6 @@
 import igraph as ig
 import math
-from random import choice
+from random import choice,random
 from Utils import Utils
 from Agent import Agent
 from time import time_ns
@@ -27,7 +27,7 @@ class MCTSGameTree:
             self.c = math.sqrt(2)
         self.chain_length = k
         if parent is not None:
-            self.color = 'Red' if parent.color is 'Blue' else 'Red'
+            self.color = 'Red' if parent.color == 'Blue' else 'Red'
         elif color is not None:
             self.color = color
         else:
@@ -70,9 +70,14 @@ class MCTSGameTree:
         return self.wins / self.times_visited + self.c * math.sqrt(
             math.log(self.parent.times_visited) / self.times_visited)
 
-    def simulate(self, trials):
+    def simulate(self, trials, epsilon):
         for trial in range(trials):
-            current_action = choice(list(self.children.values()))
+            if random() < epsilon:
+                current_action = choice(list(self.children.values()))
+            else:
+                heur_vals = [Utils.heuristic_state_score(i.state,self.color) for i in self.children.values()]
+                current_action = list(self.children.values())[heur_vals.index(max(heur_vals))]
+
             while current_action.terminality is False:
                 current_action = choice(list(current_action.children.values()))
             reward = 1 if Utils.reward(current_action.state, current_action.chain_length,
@@ -92,12 +97,14 @@ class MCTSAgent(Agent):
         self.state = Utils.make_graph(board_size)
         self.color = color
         self.chain_length = chain_length
-        self.board_size = board_size
+        self.number_of_nodes = board_size
 
     def move(self, opp):
+        self.tree = MCTSGameTree(self.chain_length, self.number_of_nodes, state=self.state, c=self.hyperparameters['C'],
+                                 color=self.color)
         self.number_of_moves += 1
         start_time = time_ns()
-        self.tree.simulate(self.hyperparameters['Trials'])
+        self.tree.simulate(self.hyperparameters['Trials'],self.hyperparameters['EPSILON'])
         node, action = self.tree.get_best_move()
         self.avg_move_time = (self.avg_move_time + (time_ns()-start_time))/2
         self.state = Utils.transition(self.state, self.color, action)
@@ -105,13 +112,12 @@ class MCTSAgent(Agent):
             self.wins += 1
             return True
         else:
-            opp.tree = MCTSGameTree(self.chain_length,self.board_size,state=self.state,c=self.hyperparameters['C'],color='Red' if self.color is 'Blue' else 'Red')
+            opp.tree = MCTSGameTree(self.chain_length, self.number_of_nodes, state=self.state, c=self.hyperparameters['C'], color='Red' if self.color == 'Blue' else 'Red')
             opp.state = self.state
             return False
 
     def reset(self):
-        self.state = Utils.make_graph(self.board_size)
-        self.tree = MCTSGameTree(self.chain_length,self.board_size,c=self.hyperparameters['C'])
+        self.state = Utils.make_graph(self.number_of_nodes)
         self.number_of_moves = 0
 
     def hard_reset(self):

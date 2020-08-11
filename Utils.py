@@ -8,6 +8,7 @@ import igraph as ig
 import numpy as np
 import time
 import torch_geometric
+from collections import Counter
 
 colors = {'Red':1,'Blue':-1}
 
@@ -109,9 +110,45 @@ class Utils:
         return torch_geometric.data.Data(edge_index=edge_index,x=x).to(device)
 
     @staticmethod
-    def heuristic_state_score(state:ig.Graph):
-        #TODO: Write Scoring
-        pass
+    def heuristic_state_score(state:ig.Graph,color:str):
+        color = colors[color]
+        s = state.copy()
+        for edge in s.get_edgelist():
+            if s[edge[0], edge[1]] == color:
+                s.delete_edges([edge])
+
+        o_s = state.copy()
+        for edge in o_s.get_edgelist():
+            if o_s[edge[0], edge[1]] == color*-1:
+                o_s.delete_edges([edge])
+
+        cliques = list(s.cliques(min=3))
+
+        num_of_cliques = len(cliques)
+
+        avg_len_of_cliques = sum([len(c) for c in cliques])/num_of_cliques if num_of_cliques > 0 else 0
+
+        edge_counter = 0
+        for edge in s.get_edgelist():
+            s.add_edge(edge[0],edge[1])
+            edge_counter += len(list(s.cliques(min=3)))-num_of_cliques
+            s.delete_edges([edge])
+
+        mixed_cliques = (set(list(state.cliques(min=3)))-set(cliques))-set(list(o_s.cliques(min=3)))
+        primary_cliques = 0
+        for clique in mixed_cliques:
+            bias = sum([*[state[clique[node], clique[node + 1]] for node in range(len(clique) - 1)],
+                           *[state[clique[0], clique[-1]]]])
+            if color > 0:
+                if bias > 0:
+                    primary_cliques += 1
+            elif color < 0:
+                if bias < 0:
+                    primary_cliques += 1
+
+        score = .5*num_of_cliques + avg_len_of_cliques + edge_counter + primary_cliques
+        return score
+
 
 
     def train(self, parametrization=None):
