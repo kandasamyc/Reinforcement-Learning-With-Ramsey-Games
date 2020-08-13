@@ -27,7 +27,7 @@ class MCTSGameTree:
             self.c = math.sqrt(2)
         self.chain_length = k
         if parent is not None:
-            self.color = 'Red' if parent.color == 'Blue' else 'Red'
+            self.color = 'Red' if parent.color == 'Blue' else 'Blue'
         elif color is not None:
             self.color = color
         else:
@@ -37,7 +37,7 @@ class MCTSGameTree:
         elif depth is not None:
             self.depth = depth
         else:
-            self.depth = 3
+            self.depth = 4
         self.value = 0
         self.board_size = board_size
         self.update_terminality()
@@ -72,16 +72,16 @@ class MCTSGameTree:
 
     def simulate(self, trials, epsilon):
         for trial in range(trials):
-            if random() < epsilon:
-                current_action = choice(list(self.children.values()))
-            else:
-                heur_vals = [Utils.heuristic_state_score(i.state,self.color) for i in self.children.values()]
-                current_action = list(self.children.values())[heur_vals.index(max(heur_vals))]
-
+            current_action = choice(list(self.children.values()))
             while current_action.terminality is False:
-                current_action = choice(list(current_action.children.values()))
-            reward = 1 if Utils.reward(current_action.state, current_action.chain_length,
-                                       current_action.color) > 0 else 0
+                if random() < epsilon:
+                    current_action = choice(list(current_action.children.values()))
+                else:
+                    cs = list(current_action.children.values())
+                    heur_vals = [Utils.heuristic_state_score(child.state,self.color) for child in cs]
+                    current_action = cs[heur_vals.index(max(heur_vals))]
+            reward = Utils.reward(current_action.state, current_action.chain_length,
+                                       self.color)
             while current_action is not self.parent:
                 current_action.times_visited += 1
                 current_action.wins += reward
@@ -92,7 +92,6 @@ class MCTSAgent(Agent):
     def __init__(self, hyperparameters, color, chain_length, board_size):
         super(MCTSAgent, self).__init__(color, hyperparameters)
         self.tree = MCTSGameTree(chain_length, board_size,c=hyperparameters['C'])
-        print(self.tree.terminality,len(self.tree.children))
         self.hyperparameters = hyperparameters
         self.state = Utils.make_graph(board_size)
         self.color = color
@@ -112,7 +111,6 @@ class MCTSAgent(Agent):
             self.wins += 1
             return True
         else:
-            opp.tree = MCTSGameTree(self.chain_length, self.number_of_nodes, state=self.state, c=self.hyperparameters['C'], color='Red' if self.color == 'Blue' else 'Red')
             opp.state = self.state
             return False
 
@@ -122,3 +120,7 @@ class MCTSAgent(Agent):
 
     def hard_reset(self):
         self.reset()
+
+    def update_tree(self,state):
+        self.tree = MCTSGameTree(self.chain_length, self.number_of_nodes, state=state, c=self.hyperparameters['C'],
+                                 color=self.color)

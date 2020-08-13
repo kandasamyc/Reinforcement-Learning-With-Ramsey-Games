@@ -8,11 +8,10 @@ from GQN import GCQNetwork
 from Utils import Utils
 import torch_geometric
 import csv
+from MCTS import MCTSAgent
+import math
 
-d = {1:2,3:4}
-w = csv.writer(open("output.csv", "w"))
-for key, val in d.items():
-    w.writerow([key, val])
+
 
 
 def detect_cycle(G: nx.Graph, chain_length: int):
@@ -86,15 +85,21 @@ def detect_cycle2(G: ig.Graph, chain_length: int):
 # # print(x)
 #
 # g = GQNetwork(6,100)
-f = Utils.make_graph(6)
-for edge in [(1,2),(2,4),(4,1)]:
-    f = Utils.transition(f,'Red',edge)
-for edge in [(3,2),(1,5)]:
-    f = Utils.transition(f,'Blue',edge)
-for edge in f.get_edgelist():
-    if f[edge[0],edge[1]] == 1:
-        f.delete_edges([edge])
-        f.add
-
-print(list(f.cliques(min=3)))
+# f = Utils.make_graph(6)
+# for edge in [(1,2),(2,4),(4,1)]:
+#     f = Utils.transition(f,'Red',edge)
+# for edge in [(3,2),(1,5)]:
+#     f = Utils.transition(f,'Blue',edge)
+# for edge in f.get_edgelist():
+#     if f[edge[0],edge[1]] == 1:
+#         f.delete_edges([edge])
+#         f.add
+#
+# print(list(f.cliques(min=3)))
+m = MCTSAgent({'Trials':300,'C':math.sqrt(2),'EPSILON':1},'Red',3,6)
+# print('Starting')
+# start = time_ns()
+# m.tree.simulate(200,.1)
+# print((time_ns()))
+# print(start)
 
