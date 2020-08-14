@@ -274,7 +274,7 @@ class Utils:
 
 
     @staticmethod
-    def play(player: Agent, opp: Agent, goes_first: bool = True):
+    def play(player: Agent, opp: Agent, goes_first: bool = True,mcts: bool = False):
         """Allows the user to play a game against an agent, agent will go first by default"""
         finished = False
         replay = True
@@ -286,7 +286,12 @@ class Utils:
             while not finished:
                 if goes_first:
                     if turn:
-                        max_q, action = agent.get_max_q(state)
+                        if mcts:
+                            opp.update_tree(state)
+                            opp.tree.simulate(opp.hyperparameters['Trials'], opp.hyperparameters['EPSILON'])
+                            _, action = opp.tree.get_best_move()
+                        else:
+                            max_q, action = agent.get_max_q(state)
                         state = Utils.transition(state, agent.color, action)
                     else:
                         Utils.display_graph(state)
@@ -302,7 +307,12 @@ class Utils:
                             int(input(f'Edges: {sorted(list(Utils.get_uncolored_edges(state)))} ')) - 1]
                         state = Utils.transition(state, 'Red' if agent.color == 'Blue' else 'Blue', edge)
                     else:
-                        max_q, action = agent.get_max_q(state)
+                        if mcts:
+                            opp.update_tree(state)
+                            opp.tree.simulate(opp.hyperparameters['Trials'], opp.hyperparameters['EPSILON'])
+                            _, action = opp.tree.get_best_move()
+                        else:
+                            max_q, action = agent.get_max_q(state)
                         state = Utils.transition(state, agent.color, action)
 
                 turn = not turn

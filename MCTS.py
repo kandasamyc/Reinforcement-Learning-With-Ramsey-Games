@@ -40,7 +40,8 @@ class MCTSGameTree:
             self.depth = 4
         self.value = 0
         self.board_size = board_size
-        self.update_terminality()
+        self.updated = False
+
 
     def get_best_move(self):
         max_score = None
@@ -56,13 +57,14 @@ class MCTSGameTree:
         return self.children[action_choice], action_choice
 
     def update_terminality(self):
+        self.updated = True
         if not Utils.get_uncolored_edges(self.state) or Utils.reward(self.state, self.chain_length,
                                                                      self.color) != 0 or self.depth == 0:
             self.terminality = True
             self.value = Utils.reward(self.state, self.chain_length, self.color)
         else:
             self.children = {action:
-                MCTSGameTree(self.chain_length, self.board_size, state=Utils.transition(self.state, self.color, action), parent=self)
+                MCTSGameTree(self.chain_length, self.board_size, state=Utils.transition(self.state, self.color, action), parent=self,color='Red' if self.color == 'Blue' else 'Blue',depth=self.depth-1,c=self.c)
                 for action
                 in Utils.get_uncolored_edges(self.state)}
 
@@ -73,6 +75,7 @@ class MCTSGameTree:
     def simulate(self, trials, epsilon):
         for trial in range(trials):
             current_action = choice(list(self.children.values()))
+            if not current_action.updated: current_action.update_terminality()
             while current_action.terminality is False:
                 if random() < epsilon:
                     current_action = choice(list(current_action.children.values()))
@@ -80,6 +83,8 @@ class MCTSGameTree:
                     cs = list(current_action.children.values())
                     heur_vals = [Utils.heuristic_state_score(child.state,self.color) for child in cs]
                     current_action = cs[heur_vals.index(max(heur_vals))]
+                if not current_action.updated: current_action.update_terminality()
+
             reward = Utils.reward(current_action.state, current_action.chain_length,
                                        self.color)
             while current_action is not self.parent:
@@ -101,6 +106,7 @@ class MCTSAgent(Agent):
     def move(self, opp):
         self.tree = MCTSGameTree(self.chain_length, self.number_of_nodes, state=self.state, c=self.hyperparameters['C'],
                                  color=self.color)
+        self.tree.update_terminality()
         self.number_of_moves += 1
         start_time = time_ns()
         self.tree.simulate(self.hyperparameters['Trials'],self.hyperparameters['EPSILON'])
@@ -124,3 +130,4 @@ class MCTSAgent(Agent):
     def update_tree(self,state):
         self.tree = MCTSGameTree(self.chain_length, self.number_of_nodes, state=state, c=self.hyperparameters['C'],
                                  color=self.color)
+        self.tree.update_terminality()

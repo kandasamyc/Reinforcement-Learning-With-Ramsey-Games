@@ -96,10 +96,15 @@ def detect_cycle2(G: ig.Graph, chain_length: int):
 #         f.add
 #
 # print(list(f.cliques(min=3)))
-m = MCTSAgent({'Trials':300,'C':math.sqrt(2),'EPSILON':1},'Red',3,6)
+
 # print('Starting')
-# start = time_ns()
-# m.tree.simulate(200,.1)
-# print((time_ns()))
-# print(start)
+start = time_ns()
+m = MCTSAgent({'Trials':200,'C':math.sqrt(2),'EPSILON':.5},'Red',3,6)
+o = MCTSAgent({'Trials':200,'C':math.sqrt(2),'EPSILON':.5},'Blue',3,6)
+u = Utils(m,o,100)
+u.train()
+m.save_dict()
+o.save_dict()
+print((start-time_ns())*1e-9)
+
 
