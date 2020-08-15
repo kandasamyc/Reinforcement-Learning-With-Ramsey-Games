@@ -5,38 +5,44 @@ from MCTS import MCTSAgent
 from GQN import GQN
 import math
 
-player = MCTSAgent({'Trials':200,'C':math.sqrt(2),'EPSILON':.5},'Red',3,6)
-opp = MCTSAgent({'Trials':200,'C':math.sqrt(2),'EPSILON':.5},'Blue',3,6)
-u = Utils(player,opp)
+MCTS_player = MCTSAgent({'Trials':200,'C':math.sqrt(2),'EPSILON':.5},'Red',3,6)
+MCTS_opp = MCTSAgent({'Trials':200,'C':math.sqrt(2),'EPSILON':.5},'Blue',3,6)
 
-u.play_against_random(player,opp,50,mcts=True)
-
-player = MCTSAgent({'Trials':200,'C':math.sqrt(2),'EPSILON':1},'Red',3,6)
-opp = MCTSAgent({'Trials':200,'C':math.sqrt(2),'EPSILON':1},'Blue',3,6)
-u = Utils(player,opp)
-
-u.play_against_random(player,opp,50,mcts=True)
-
-player = DQN('Red', {"GAMMA": .3, 'EPSILON': .5, 'HIDDEN_LAYER_SIZE': 100, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
+DQN_player = DQN('Red', {"GAMMA": .3, 'EPSILON': .5, 'HIDDEN_LAYER_SIZE': 100, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
                      'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .0015, 'EPSILON_DECAY': .99997})
-opp = DQN('Blue', {"GAMMA": .3, 'EPSILON': .5, 'HIDDEN_LAYER_SIZE': 100, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
+DQN_opp = DQN('Blue', {"GAMMA": .3, 'EPSILON': .5, 'HIDDEN_LAYER_SIZE': 100, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
                      'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .0015, 'EPSILON_DECAY': .99997})
-u = Utils(player, opp, 50000)
-u.train()
-player.store()
-opp.store()
-player.save_dict()
-opp.save_dict()
-player = DQN('Red', {"GAMMA": .3, 'EPSILON': .5, 'HIDDEN_LAYER_SIZE': 100, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
-                     'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .015, 'EPSILON_DECAY': .99997})
-opp = DQN('Blue', {"GAMMA": .3, 'EPSILON': .5, 'HIDDEN_LAYER_SIZE': 100, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
-                     'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .015, 'EPSILON_DECAY': .99997})
-u = Utils(player, opp, 50000)
-u.train()
-player.store()
-opp.store()
-player.save_dict()
-opp.save_dict()
+
+
+u1 = Utils(MCTS_player, DQN_opp, 3000)
+u1.train()
+MCTS_player.store()
+DQN_opp.store()
+MCTS_player.save_dict()
+DQN_opp.save_dict()
+
+
+u2 = Utils(DQN_player, MCTS_opp, 3000)
+u2.train()
+DQN_player.store()
+MCTS_opp.store()
+DQN_player.save_dict()
+MCTS_opp.save_dict()
+
+
+Utils.play_against_random(DQN_player,DQN_opp,100)
+Utils.play_against_random(MCTS_player,MCTS_opp,50,mcts=True)
+
+# player = DQN('Red', {"GAMMA": .3, 'EPSILON': .5, 'HIDDEN_LAYER_SIZE': 100, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
+#                      'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .015, 'EPSILON_DECAY': .99997})
+# opp = DQN('Blue', {"GAMMA": .3, 'EPSILON': .5, 'HIDDEN_LAYER_SIZE': 100, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,
+#                      'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': .015, 'EPSILON_DECAY': .99997})
+# u = Utils(player, opp, 50000)
+# u.train()
+# player.store()
+# opp.store()
+# player.save_dict()
+# opp.save_dict()
 # player = TQL('Red', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},training=False)
 # opp = TQL('Blue', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},training=False)
 # player = GQN('Red', {"GAMMA": .3, 'EPSILON': .5, 'HIDDEN_LAYER_SIZE': 100, 'BUFFER_SIZE': 140, 'BATCH_SIZE': 70,

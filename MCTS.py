@@ -78,11 +78,14 @@ class MCTSGameTree:
             if not current_action.updated: current_action.update_terminality()
             while current_action.terminality is False:
                 if random() < epsilon:
+                    
                     current_action = choice(list(current_action.children.values()))
                 else:
                     cs = list(current_action.children.values())
                     heur_vals = [Utils.heuristic_state_score(child.state,self.color) for child in cs]
                     current_action = cs[heur_vals.index(max(heur_vals))]
+                
+    
                 if not current_action.updated: current_action.update_terminality()
 
             reward = Utils.reward(current_action.state, current_action.chain_length,
@@ -115,8 +118,17 @@ class MCTSAgent(Agent):
         self.state = Utils.transition(self.state, self.color, action)
         if Utils.reward(self.state,self.chain_length,self.color) == 1 or not Utils.get_uncolored_edges(self.state):
             self.wins += 1
+            try:
+                opp.opp_move(self.state,action,self.color)
+            except Exception:
+                pass
+            opp.state = self.state
             return True
         else:
+            try:
+                opp.opp_move(self.state,action,self.color)
+            except Exception:
+                pass
             opp.state = self.state
             return False
 

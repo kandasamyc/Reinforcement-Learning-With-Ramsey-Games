@@ -63,7 +63,10 @@ class DQN(Agent):
         # update q table
         if self.training:
             self.update_q(self.state, self.action, reward)
-        opponent.opp_move(self.state, self.action, self.color)
+        try:
+            opponent.opp_move(self.state, self.action, self.color)
+        except AttributeError:
+            opponent.state = self.state
         self.state = new_state
 
         # If its the end, return False, otherwise make an action
@@ -142,6 +145,7 @@ class DQN(Agent):
             reward = Utils.reward(Utils.transition(state, c, action), self.chain_length, self.color)
             self.update_q(state, action, reward, color=c)
         self.state = Utils.transition(state, c, action)
+        
 
     def reset(self):
         self.state = Utils.make_graph(self.number_of_nodes)

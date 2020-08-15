@@ -100,11 +100,7 @@ def detect_cycle2(G: ig.Graph, chain_length: int):
 # print('Starting')
 start = time_ns()
 m = MCTSAgent({'Trials':200,'C':math.sqrt(2),'EPSILON':.5},'Red',3,6)
-o = MCTSAgent({'Trials':200,'C':math.sqrt(2),'EPSILON':.5},'Blue',3,6)
-u = Utils(m,o,100)
-u.train()
-m.save_dict()
-o.save_dict()
+m.update_tree(Utils.make_graph(6))
 print((start-time_ns())*1e-9)
 
 
