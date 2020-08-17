@@ -4,7 +4,7 @@ from time import time_ns
 import numpy as np
 import torch
 from itertools import combinations
-from GQN import GCQNetwork
+from GQN import GATCQNetwork
 from Utils import Utils
 import torch_geometric
 import csv
@@ -85,22 +85,21 @@ def detect_cycle2(G: ig.Graph, chain_length: int):
 # # print(x)
 #
 # g = GQNetwork(6,100)
-# f = Utils.make_graph(6)
-# for edge in [(1,2),(2,4),(4,1)]:
-#     f = Utils.transition(f,'Red',edge)
-# for edge in [(3,2),(1,5)]:
-#     f = Utils.transition(f,'Blue',edge)
-# for edge in f.get_edgelist():
-#     if f[edge[0],edge[1]] == 1:
-#         f.delete_edges([edge])
-#         f.add
+f = Utils.make_graph(6)
+for edge in [(1,2),(2,4)]:
+    f = Utils.transition(f,'Red',edge)
+for edge in [(3,2),(1,5)]:
+    f = Utils.transition(f,'Blue',edge)
 #
 # print(list(f.cliques(min=3)))
 
 # print('Starting')
 start = time_ns()
-m = MCTSAgent({'Trials':200,'C':math.sqrt(2),'EPSILON':.5},'Red',3,6)
-m.update_tree(Utils.make_graph(6))
+m = GATCQNetwork(6,100)
+d = Utils.graph_to_data(f,'Red',torch.device('cpu'))
+e_types = [f[e[0],e[1]] for e in f.get_edgelist()]
+print(m.forward(d))
+print(Utils.get_uncolored_edges(f))
 print((start-time_ns())*1e-9)
 
 

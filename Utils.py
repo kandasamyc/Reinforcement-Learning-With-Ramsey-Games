@@ -229,6 +229,8 @@ class Utils:
 
                 turn = not turn
 
+                Utils.display_graph(state)
+
                 if Utils.reward(state, player.chain_length, player.color) == 1:
                     p_win_count += 1
                     finished = True
