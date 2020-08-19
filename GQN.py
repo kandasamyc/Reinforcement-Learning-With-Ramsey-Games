@@ -74,7 +74,7 @@ class EdgeQNetwork(torch.nn.Module):
 class GATCQNetwork(torch.nn.Module):
     def __init__(self, board_size, hidden_layer_size):
         super(GATCQNetwork, self).__init__()
-        self.input = GATConv(board_size - 1, board_size - 1)
+        self.input = GATConv(board_size - 1, board_size - 1,)
         self.l2 = GATConv(board_size - 1, board_size - 1)
         self.l3 = GATConv(board_size - 1, board_size - 1)
 
@@ -104,7 +104,8 @@ class GQN(Agent):
         self.q_network = GATCQNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE']).to(self.device)
         self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=hyperparameters['LEARNING_RATE'])
         self.loss_fn = torch.nn.MSELoss(reduction='mean')
-        self.q_network.apply(Utils.weight_initialization)
+        if not (type(self.q_network) == GATCQNetwork):
+            self.q_network.apply(Utils.weight_initialization)
         self.target_network = GATCQNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE']).to(self.device)
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.state = Utils.make_graph(number_of_nodes)
@@ -226,7 +227,8 @@ class GQN(Agent):
         self.q_network = GATCQNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
         self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=self.hyperparameters['LEARNING_RATE'])
         self.loss_fn = torch.nn.MSELoss(reduction='mean')
-        self.q_network.apply(Utils.weight_initialization)
+        if not (type(self.q_network) == GATCQNetwork):
+            self.q_network.apply(Utils.weight_initialization)
         self.target_network = GATCQNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.epoch = 0

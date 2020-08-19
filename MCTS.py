@@ -97,18 +97,19 @@ class MCTSGameTree:
 
 
 class MCTSAgent(Agent):
-    def __init__(self, hyperparameters, color, chain_length, board_size):
+    def __init__(self, hyperparameters, color, chain_length, board_size,depth=4):
         super(MCTSAgent, self).__init__(color, hyperparameters)
-        self.tree = MCTSGameTree(chain_length, board_size,c=hyperparameters['C'])
+        self.tree = MCTSGameTree(chain_length, board_size,c=hyperparameters['C'],depth=depth)
         self.hyperparameters = hyperparameters
         self.state = Utils.make_graph(board_size)
         self.color = color
         self.chain_length = chain_length
         self.number_of_nodes = board_size
+        self.depth = depth
 
     def move(self, opp):
         self.tree = MCTSGameTree(self.chain_length, self.number_of_nodes, state=self.state, c=self.hyperparameters['C'],
-                                 color=self.color)
+                                 color=self.color,depth=self.depth)
         self.tree.update_terminality()
         self.number_of_moves += 1
         start_time = time_ns()
@@ -141,5 +142,5 @@ class MCTSAgent(Agent):
 
     def update_tree(self,state):
         self.tree = MCTSGameTree(self.chain_length, self.number_of_nodes, state=state, c=self.hyperparameters['C'],
-                                 color=self.color)
+                                 color=self.color,depth=self.depth)
         self.tree.update_terminality()

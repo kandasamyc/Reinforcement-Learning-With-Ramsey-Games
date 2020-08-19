@@ -140,19 +140,19 @@ class Utils:
             edge_counter += len(list(s.cliques(min=3))) - num_of_cliques
             s.delete_edges([edge])
 
-        # mixed_cliques = (set(list(state.cliques(min=3)))-set(cliques))-set(list(o_s.cliques(min=3)))
-        # primary_cliques = 0
-        # for clique in mixed_cliques:
-        #     bias = sum([*[state[clique[node], clique[node + 1]] for node in range(len(clique) - 1)],
-        #                    *[state[clique[0], clique[-1]]]])
-        #     if color > 0:
-        #         if bias > 0:
-        #             primary_cliques += 1
-        #     elif color < 0:
-        #         if bias < 0:
-        #             primary_cliques += 1
+        mixed_cliques = (set(list(state.cliques(min=3)))-set(cliques))-set(list(o_s.cliques(min=3)))
+        primary_cliques = 0
+        for clique in mixed_cliques:
+            bias = sum([*[state[clique[node], clique[node + 1]] for node in range(len(clique) - 1)],
+                           *[state[clique[0], clique[-1]]]])
+            if color > 0:
+                if bias > 0:
+                    primary_cliques += 1
+            elif color < 0:
+                if bias < 0:
+                    primary_cliques += 1
 
-        score = .5 * num_of_cliques + avg_len_of_cliques + edge_counter
+        score = .5 * num_of_cliques + avg_len_of_cliques + edge_counter + primary_cliques
         return score
 
     def train(self, parametrization=None):
@@ -228,8 +228,6 @@ class Utils:
                                              choice(list(Utils.get_uncolored_edges(state))))
 
                 turn = not turn
-
-                Utils.display_graph(state)
 
                 if Utils.reward(state, player.chain_length, player.color) == 1:
                     p_win_count += 1
