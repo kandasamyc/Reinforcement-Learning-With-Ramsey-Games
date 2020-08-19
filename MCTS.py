@@ -117,8 +117,11 @@ class MCTSAgent(Agent):
         node, action = self.tree.get_best_move()
         self.avg_move_time = (self.avg_move_time + (time_ns()-start_time))/2
         self.state = Utils.transition(self.state, self.color, action)
-        if Utils.reward(self.state,self.chain_length,self.color) == 1 or not Utils.get_uncolored_edges(self.state):
-            self.wins += 1
+        if (r:=Utils.reward(self.state,self.chain_length,self.color) == 1) or not Utils.get_uncolored_edges(self.state):
+            self.wins += r
+            if r == 0:
+                Utils.display_graph(self.state)
+                raise Exception
             try:
                 opp.opp_move(self.state,action,self.color)
             except Exception:

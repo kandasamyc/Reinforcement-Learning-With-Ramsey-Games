@@ -23,6 +23,7 @@ class Agent(object):
         tracemalloc.start()
 
     def write_info(self):
+        """Writes info to a tensorboard event file"""
         self.writer.add_scalar('Loss', self.loss, self.epoch)
         self.writer.add_scalar('Win Rate', self.wins/self.epoch, self.epoch)
         self.writer.add_scalar('Move Time', self.avg_move_time, self.epoch)
@@ -30,12 +31,14 @@ class Agent(object):
         self.writer.flush()
 
     def write_network_info(self, layers: list, layer_names: list):
+        """Writes network info to a tensorboard event file"""
         for layer, name in zip(layers, layer_names):
             self.writer.add_histogram(name + " Bias", layer.bias, self.epoch)
             self.writer.add_histogram(name + " Weights", layer.weight, self.epoch)
         self.writer.flush()
 
     def update_writer(self,hyperparameters):
+        """Updates a tensorboard writer with the appropriate name"""
         comment = " "
         for p_name, param in hyperparameters.items():
             comment += p_name + "=" + str(param) + " "
@@ -43,12 +46,14 @@ class Agent(object):
         self.writer = SummaryWriter(comment=comment)
 
     def write_MCTS_info(self):
+        """Writes MCTS info to a tensorboard event file"""
         self.writer.add_scalar('Win Rate', self.wins/self.epoch, self.epoch)
         self.writer.add_scalar('Move Time', self.avg_move_time, self.epoch)
         self.writer.add_scalar('Number of Moves', self.number_of_moves, self.epoch)
         self.writer.flush()
 
     def save_model(self,q_model,target_model,optimizer):
+        """Saves a pytorch model along with loss, epoch, target model and optimizer"""
         save({
             'epoch': self.epoch,
             'q_model_state_dict': q_model.state_dict(),
@@ -59,9 +64,11 @@ class Agent(object):
         f'models/{self.comment.strip()},{time.strftime("%Y %m %d-%H %M %S")}.pth')
 
     def write_info_dict(self):
+        """Adds loss, win_rate, move time, number of moves and memory usage to a dictionary"""
         self.data[self.epoch] = [self.loss,self.wins/self.epoch,self.avg_move_time,self.number_of_moves,tracemalloc.get_traced_memory()[0]]
 
     def save_dict(self):
+        """Saves a dictionary of loss, win_rate, move time, number of moves and memory usage"""
         df = pandas.DataFrame.from_dict(self.data)
         df.to_pickle(f'saved_data/{self.comment.strip()},{time.strftime("%Y %m %d-%H %M %S")}.pkl.xz')
         tracemalloc.stop()

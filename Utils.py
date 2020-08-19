@@ -95,12 +95,14 @@ class Utils:
 
     @staticmethod
     def weight_initialization(m):
+        """Initializes a Linear layer with xavier uniform initialization"""
         if type(m) == nn.Linear:
             nn.init.xavier_uniform_(m.weight)
             m.bias.data.fill_(0.01)
 
     @staticmethod
     def graph_to_data(G: ig.Graph, color: str, device: torch.device):
+        """Converts a graph to a pytorch Data object"""
         edge_index = torch.tensor(
             [*[list(e) for e in G.get_edgelist()], *[list(e).__reversed__() for e in G.get_edgelist()]],
             dtype=torch.long).t().contiguous()
@@ -114,6 +116,7 @@ class Utils:
 
     @staticmethod
     def heuristic_state_score(state: ig.Graph, color: str):
+        """Calculates a heuristic score for a state"""
         if color == 'Red':
             color = 1
         else:
@@ -192,6 +195,7 @@ class Utils:
         return self.player.wins / self.player.epoch
 
     def optimize_training(self, params):
+        """Runs ax optimization with no constraints"""
         best_parameters, values, experiment, model = ax.optimize(
             parameters=params,
             evaluation_function=self.train,
@@ -201,6 +205,7 @@ class Utils:
 
     @staticmethod
     def play_against_random(player: Agent, opp: Agent, trials: int, mcts: bool = False):
+        """Tests an agent against a random player"""
         p_win_count = 0
         p_loss_count = 0
         p_tie_count = 0
@@ -271,6 +276,7 @@ class Utils:
         print(p_win_count,p_loss_count,o_win_count,o_loss_count)
         print(f'Player won {round(p_win_count/trials,3)}% , lost {round(p_loss_count/trials,3)}% and tied {round(p_tie_count/trials,3)}% of games')
         print(f'Opponent won {round(o_win_count/trials,3)}% , lost {round(o_loss_count/trials,3)}% and tied {round(o_tie_count/trials,3)}% of games')
+        return p_win_count/trials
 
 
     @staticmethod
