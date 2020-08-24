@@ -169,11 +169,13 @@ class Utils:
             self.adversary.update_writer(parametrization)
         for game_num in tqdm(range(self.number_of_games)):
             finished = False
+            t = 0
             while not finished:
-                finished = self.player.move(self.adversary)  # player makes move
+                finished = self.player.move(self.adversary)# player makes move
                 if finished:
                     break
-                finished = self.adversary.move(self.player)  # adversary makes move
+                finished = self.adversary.move(self.player)
+                # adversary makes move
             self.player.epoch += 1
             self.adversary.epoch += 1
             if abs(self.player.number_of_moves - self.adversary.number_of_moves) > 1:
@@ -182,6 +184,7 @@ class Utils:
                 print(self.adversary.state)
             self.player.write_info_dict()
             self.adversary.write_info_dict()
+
             # self.player.write_network_info(
             #     [self.player.q_network.input,self.player.q_network.l2,self.player.q_network.output],
             #     ['Input','Hidden','Output']
@@ -233,6 +236,7 @@ class Utils:
                                              choice(list(Utils.get_uncolored_edges(state))))
 
                 turn = not turn
+                
 
                 if Utils.reward(state, player.chain_length, player.color) == 1:
                     p_win_count += 1
@@ -264,10 +268,10 @@ class Utils:
                                              choice(list(Utils.get_uncolored_edges(state))))
                 turn = not turn
 
-                if Utils.reward(state, opp.chain_length, opp.color) == 1:
+                if Utils.reward(state, opp.chain_length, opp.color) == -1:
                     o_win_count += 1
                     finished = True
-                elif Utils.reward(state, opp.chain_length, opp.color) == -1:
+                elif Utils.reward(state, opp.chain_length, opp.color) == 1:
                     o_loss_count += 1
                     finished = True
                 elif not Utils.get_uncolored_edges(state):

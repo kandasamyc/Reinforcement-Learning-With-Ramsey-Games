@@ -115,7 +115,7 @@ class MCTSAgent(Agent):
         start_time = time_ns()
         self.tree.simulate(self.hyperparameters['Trials'],self.hyperparameters['EPSILON'])
         node, action = self.tree.get_best_move()
-        self.avg_move_time = (self.avg_move_time + (time_ns()-start_time))/2
+        self.avg_move_time = (self.avg_move_time*(self.number_of_moves-1) + (time_ns() - start_time)) / self.number_of_moves
         self.state = Utils.transition(self.state, self.color, action)
         if (r:=Utils.reward(self.state,self.chain_length,self.color) == 1) or not Utils.get_uncolored_edges(self.state):
             self.wins += r

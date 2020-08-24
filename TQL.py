@@ -39,6 +39,7 @@ class TQL(Agent):
         self.update_q(self.state, self.action, reward)
         opponent.opp_move(self.state, self.action, self.color)
         self.state = new_state
+        self.avg_move_time = (self.avg_move_time*(self.number_of_moves-1 if self.number_of_moves > 1 else 1) + (time_ns() - start_time)) / self.number_of_moves
 
         # If its the end, return False, otherwise make an action
         if (r:=Utils.reward(self.state, self.chain_length,self.color)) == 1 or len(Utils.get_uncolored_edges(self.state)) < 1:
@@ -47,7 +48,6 @@ class TQL(Agent):
             else:
                 Utils.display_graph(self.state)
                 raise Exception
-            self.avg_move_time = (self.avg_move_time*(self.number_of_moves-1) + (time_ns() - start_time)) / self.number_of_moves
             return True
         else:
             return False

@@ -13,6 +13,80 @@ from ax.service.ax_client import AxClient
 # TODO: MCTS with best params on k=3
 # TODO: MCTS with best params on k=4
 
+#TQL
+
+player = TQL('Red', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997})
+opp = TQL('Blue', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997})
+u1 = Utils(player,opp,30000)
+u1.train()
+player.store()
+opp.store()
+player.save_dict()
+opp.save_dict()
+
+player = TQL('Red', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},number_of_nodes=18,chain_length=4)
+opp = TQL('Blue', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},number_of_nodes=18,chain_length=4)
+u2 = Utils(player,opp,1500)
+u2.train()
+player.store()
+opp.store()
+player.save_dict()
+opp.save_dict()
+
+
+dqn_best_params = {'HIDDEN_LAYER_SIZE': 116, 'BUFFER_SIZE': 182, 'BATCH_SIZE': 72, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.007363222048745642, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+player = DQN('Red', dqn_best_params)
+opp = DQN('Blue', dqn_best_params)
+u3 = Utils(player,opp,30000)
+u3.train()
+player.store()
+opp.store()
+player.save_dict()
+opp.save_dict()
+
+dqn_best_params = {'HIDDEN_LAYER_SIZE': 116, 'BUFFER_SIZE': 182, 'BATCH_SIZE': 72, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.007363222048745642, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+player = DQN('Red', dqn_best_params,number_of_nodes=18,chain_length=4)
+opp = DQN('Blue', dqn_best_params,number_of_nodes=18,chain_length=4)
+u4 = Utils(player,opp,1000)
+u4.train()
+player.store()
+opp.store()
+player.save_dict()
+opp.save_dict()
+
+player = MCTSAgent({'Trials':200,'C':.01,'EPSILON':.5},'Red',3,6)
+opp = MCTSAgent({'Trials':200,'C':.01,'EPSILON':.5},'Blue',3,6)
+u5 = Utils(player,opp,30000)
+u5.train()
+player.save_dict()
+opp.save_dict()
+
+player = MCTSAgent({'Trials':200,'C':.01,'EPSILON':.5},'Red',4,18)
+opp = MCTSAgent({'Trials':200,'C':.01,'EPSILON':.5},'Blue',4,18)
+u6 = Utils(player,opp)
+u6.train()
+player.save_dict()
+opp.save_dict()
+
+gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.005299483633041382, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+player = GQN('Red', gqn_params)
+opp = GQN('Blue', gqn_params)
+u = Utils(player, opp, 3000)
+u.train()
+player.store()
+opp.store()
+player.save_dict()
+opp.save_dict()
+
+player = GQN('Red', gqn_params,number_of_nodes=18,chain_length=4)
+opp = GQN('Blue', gqn_params,number_of_nodes=18,chain_length=4)
+u = Utils(player, opp, 500)
+u.train()
+player.store()
+opp.store()
+player.save_dict()
+opp.save_dict()
+
 
 # ax_client = AxClient()
 # ax_client.create_experiment(
@@ -70,35 +144,6 @@ from ax.service.ax_client import AxClient
     # parameters, trial_index = ax_client.get_next_trial()
     # ax_client.complete_trial(trial_index,raw_data=u.train(parameters))
 
-
-
-player = TQL('Red', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997})
-opp = TQL('Blue', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997})
-u1 = Utils(player,opp,50000)
-u1.train()
-player.store()
-opp.store()
-player.save_dict()
-opp.save_dict()
-
-player = TQL('Red', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},number_of_nodes=18,chain_length=4)
-opp = TQL('Blue', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},number_of_nodes=18,chain_length=4)
-u1 = Utils(player,opp,1500)
-u1.train()
-player.store()
-opp.store()
-player.save_dict()
-opp.save_dict()
-
-b = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.005299483633041382, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
-player_t = GQN('Red', b,number_of_nodes=18,chain_length=4)
-opp_t = GQN('Blue', b,number_of_nodes=18,chain_length=4)
-u_t = Utils(player_t, opp_t, 500)
-u_t.train()
-player_t.store()
-opp_t.store()
-player_t.save_dict()
-opp_t.save_dict()
 # 
 # 
 # dqn_best_params = {'HIDDEN_LAYER_SIZE': 116, 'BUFFER_SIZE': 182, 'BATCH_SIZE': 72, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.007363222048745642, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
