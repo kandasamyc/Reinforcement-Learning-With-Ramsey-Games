@@ -139,9 +139,12 @@ class GQN(Agent):
         self.state = new_state
 
         # If its the end, return False, otherwise make an action
-        if len(Utils.get_uncolored_edges(self.state)) < 1 or Utils.reward(self.state, self.chain_length,
-                                                                          self.color) == 1:
-            self.wins += 1
+        if (r := Utils.reward(self.state, self.chain_length, self.color)) == 1 or len(
+                Utils.get_uncolored_edges(self.state)) < 1:
+            self.wins += r
+            if r == 0:
+                Utils.display_graph(self.state)
+                raise Exception
             self.avg_move_time = (self.avg_move_time + (time_ns() - start_time)) / 2.0
             return True
         else:
