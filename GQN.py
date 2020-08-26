@@ -120,6 +120,7 @@ class GQN(Agent):
 
     def move(self, opponent):
         # Update network based on the state the opponent just put the environment in
+        start_time = time_ns()
         self.number_of_moves += 1
         self.hyperparameters['EPSILON'] *= self.hyperparameters['EPSILON_DECAY']
         if random.random() < self.hyperparameters["EPSILON"] and self.training:
