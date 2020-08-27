@@ -14,35 +14,39 @@ import math
 
 
 
-def detect_cycle(G: nx.Graph, chain_length: int):
+def detect_cycle(G: ig.Graph, chain_length: int):
     """Returns the color of a cycle of length chain_length if it exists, otherwise None"""
-    if nx.graph_clique_number(G) < chain_length:
-        return None
-    chains = [i for i in list(nx.enumerate_all_cliques(G)) if len(i) == chain_length]
-    print(chains)
-    for chain in chains:
-        chain_edges = [*[G[chain[node]][chain[node + 1]] for node in range(chain_length - 1)],
-                       *[G[chain[0]][chain[-1]]]]
-        if all([c['color'] == chain_edges[0]['color'] for c in chain_edges]):
-            return chain_edges[0]['color']
-    return None
-
-
-def detect_cycle2(G: ig.Graph, chain_length: int):
     cliques = list(G.cliques(min=chain_length))
-    print(cliques)
+    cliques = [i for i in cliques if len(i) == chain_length]
     if len(cliques) < 1:
         return None
     else:
         for chain in cliques:
             chain_edges = [*[G[chain[node], chain[node + 1]] for node in range(chain_length - 1)],
                            *[G[chain[0], chain[-1]]]]
-            print(chain_edges)
             if len(set(chain_edges)) == 1:
                 return chain_edges[0]
     return None
 
-
+def detect_cycle2(G: ig.Graph, chain_length: int):
+    """Returns the color of a cycle of length chain_length if it exists, otherwise None"""
+    cliques = list(G.cliques(min=chain_length))
+    cliques = [i for i in cliques if len(i) == chain_length]
+    if len(cliques) < 1:
+        return None
+    else:
+        for chain in cliques:
+            edges = combinations(chain,2)
+            chain_edges = [G[c[0],c[1]] for c in edges]
+            if len(set(chain_edges)) == 1:
+                return chain_edges[0]
+    return None
+f = Utils.make_graph(6)
+for edge in [(1,2),(2,3),(3,4),(4,1),(3,1),(2,4)]:
+    f = Utils.transition(f,'Red',edge)
+for edge in []:
+    f = Utils.transition(f,'Blue',edge)
+print(detect_cycle2(f,4))
 # g = nx.Graph()
 # g.add_nodes_from([i for i in range(6)])
 # t = GQNetwork(6,100)
@@ -94,12 +98,12 @@ for edge in [(3,2),(1,5)]:
 # print(list(f.cliques(min=3)))
 
 # print('Starting')
-start = time_ns()
-m = GATCQNetwork(6,100)
-d = Utils.graph_to_data(f,'Red',torch.device('cpu'))
-e_types = [f[e[0],e[1]] for e in f.get_edgelist()]
-print(m.forward(d))
-print(Utils.get_uncolored_edges(f))
-print((start-time_ns())*1e-9)
+# start = time_ns()
+# m = GATCQNetwork(6,100)
+# d = Utils.graph_to_data(f,'Red',torch.device('cpu'))
+# e_types = [f[e[0],e[1]] for e in f.get_edgelist()]
+# print(m.forward(d))
+# print(Utils.get_uncolored_edges(f))
+# print((start-time_ns())*1e-9)
 
 

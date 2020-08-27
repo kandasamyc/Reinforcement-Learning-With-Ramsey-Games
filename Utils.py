@@ -30,8 +30,8 @@ class Utils:
             return None
         else:
             for chain in cliques:
-                chain_edges = [*[G[chain[node], chain[node + 1]] for node in range(chain_length - 1)],
-                               *[G[chain[0], chain[-1]]]]
+                edges = combinations(chain,2)
+                chain_edges = [G[c[0],c[1]] for c in edges]
                 if len(set(chain_edges)) == 1:
                     return chain_edges[0]
         return None

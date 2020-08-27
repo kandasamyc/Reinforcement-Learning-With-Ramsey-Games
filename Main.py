@@ -43,20 +43,19 @@ from ax.service.ax_client import AxClient
 # opp.store()
 # player.save_dict()
 # opp.save_dict()
-
-# dqn_best_params = {'HIDDEN_LAYER_SIZE': 116, 'BUFFER_SIZE': 182, 'BATCH_SIZE': 72, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0073632, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
-# player = DQN('Red', dqn_best_params,number_of_nodes=18,chain_length=4)
-# opp = DQN('Blue', dqn_best_params,number_of_nodes=18,chain_length=4)
-# u4 = Utils(player,opp,1500)
-# try:
-#     u4.train()
-#     player.store()
-#     opp.store()
-#     player.save_dict()
-#     opp.save_dict()
-# except Exception:
-#     print(f'DQN for 4 Failed')
-
+# 
+dqn_best_params = {'HIDDEN_LAYER_SIZE': 116, 'BUFFER_SIZE': 182, 'BATCH_SIZE': 72, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0073632, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+player = DQN('Red', dqn_best_params,number_of_nodes=18,chain_length=4)
+opp = DQN('Blue', dqn_best_params,number_of_nodes=18,chain_length=4)
+u4 = Utils(player,opp,1500)
+try:
+    u4.train()
+    player.store()
+    opp.store()
+    player.save_dict()
+    opp.save_dict()
+except Exception:
+    print(f'DQN for 4 Failed')
 # player = MCTSAgent({'Trials':200,'C':.01,'EPSILON':.5},'Red',3,6)
 # opp = MCTSAgent({'Trials':200,'C':.01,'EPSILON':.5},'Blue',3,6)
 # u5 = Utils(player,opp,1000)
@@ -69,7 +68,7 @@ from ax.service.ax_client import AxClient
 
 player = MCTSAgent({'Trials':200,'C':.01,'EPSILON':.5},'Red',4,18)
 opp = MCTSAgent({'Trials':200,'C':.01,'EPSILON':.5},'Blue',4,18)
-u6 = Utils(player,opp,100)
+u6 = Utils(player,opp,20)
 try:
     u6.train()
     player.save_dict()
@@ -78,17 +77,17 @@ except:
     print('MCTS for 4 Failed')
 
 gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
-player = GQN('Red', gqn_params)
-opp = GQN('Blue', gqn_params)
-u = Utils(player, opp, 3000)
-try:
-    u.train()
-    player.store()
-    opp.store()
-    player.save_dict()
-    opp.save_dict()
-except Exception:
-    print('GQN for 3 Failed')
+# player = GQN('Red', gqn_params)
+# opp = GQN('Blue', gqn_params)
+# u = Utils(player, opp, 3000)
+# try:
+#     u.train()
+#     player.store()
+#     opp.store()
+#     player.save_dict()
+#     opp.save_dict()
+# except Exception:
+#     print('GQN for 3 Failed')
 
 player = GQN('Red', gqn_params,number_of_nodes=18,chain_length=4)
 opp = GQN('Blue', gqn_params,number_of_nodes=18,chain_length=4)
@@ -102,6 +101,35 @@ try:
 except Exception:
     print('GQN for 4 Failed')
 
+player = TQL('Red', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},number_of_nodes=18,chain_length=4)
+opp = TQL('Blue', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},number_of_nodes=18,chain_length=4)
+u2 = Utils(player,opp,1000)
+u2.train()
+player.store()
+opp.store()
+
+dqn_best_params = {'HIDDEN_LAYER_SIZE': 116, 'BUFFER_SIZE': 182, 'BATCH_SIZE': 72, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0073632, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+dplayer = DQN('Red', dqn_best_params)
+dopp = DQN('Blue', dqn_best_params)
+mplayer = MCTSAgent({'Trials':200,'C':.01,'EPSILON':.5},'Red',3,6)
+mopp = MCTSAgent({'Trials':200,'C':.01,'EPSILON':.5},'Blue',3,6)
+u7 = Utils(dplayer,mopp)
+try:
+    u7.train()
+    dplayer.save_dict()
+    mopp.save_dict()
+    dplayer.store()
+except Exception:
+    print('MCTS and DQN Failed')
+
+u8 = Utils(mplayer,dopp)
+try:
+    u7.train()
+    mplayer.save_dict()
+    dopp.save_dict()
+    dopp.store()
+except Exception:
+    print('MCTS and DQN Failed')
 # ax_client = AxClient()
 # ax_client.create_experiment(
     # name="GQN_Testing",
