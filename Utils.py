@@ -146,8 +146,8 @@ class Utils:
         mixed_cliques = (set(list(state.cliques(min=3)))-set(cliques))-set(list(o_s.cliques(min=3)))
         primary_cliques = 0
         for clique in mixed_cliques:
-            bias = sum([*[state[clique[node], clique[node + 1]] for node in range(len(clique) - 1)],
-                           *[state[clique[0], clique[-1]]]])
+            edges = combinations(clique,2)
+            bias = sum(state[c[0],c[1]] for c in edges)
             if color > 0:
                 if bias > 0:
                     primary_cliques += 1
