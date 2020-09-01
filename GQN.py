@@ -98,15 +98,23 @@ class GATCQNetwork(torch.nn.Module):
 
 
 class GQN(Agent):
-    def __init__(self, color, hyperparameters, training=True, number_of_nodes: int = 6, chain_length: int = 3):
+    def __init__(self, color, hyperparameters, training=True, number_of_nodes: int = 6, chain_length: int = 3,network_id:int=1):
         super(GQN, self).__init__(color, hyperparameters)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.q_network = GATCQNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE']).to(self.device)
+        if network_id == 1:
+            self.network = GATCQNetwork
+        elif network_id == 2:
+            self.network = GCQNetwork
+        elif network_id == 3:
+            self.network = EdgeQNetwork
+        else:
+            raise Exception
+        self.q_network = self.network(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE']).to(self.device)
         self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=hyperparameters['LEARNING_RATE'])
         self.loss_fn = torch.nn.MSELoss(reduction='mean')
         if not (type(self.q_network) == GATCQNetwork):
             self.q_network.apply(Utils.weight_initialization)
-        self.target_network = GATCQNetwork(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE']).to(self.device)
+        self.target_network = self.network(number_of_nodes, hyperparameters['HIDDEN_LAYER_SIZE']).to(self.device)
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.state = Utils.make_graph(number_of_nodes)
         self.chain_length = chain_length
@@ -226,12 +234,12 @@ class GQN(Agent):
 
     def hard_reset(self):
         self.reset()
-        self.q_network = GATCQNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
+        self.q_network = self.network(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
         self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=self.hyperparameters['LEARNING_RATE'])
         self.loss_fn = torch.nn.MSELoss(reduction='mean')
         if not (type(self.q_network) == GATCQNetwork):
             self.q_network.apply(Utils.weight_initialization)
-        self.target_network = GATCQNetwork(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
+        self.target_network = self.network(self.number_of_nodes, self.hyperparameters['HIDDEN_LAYER_SIZE'])
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.epoch = 0
         self.wins = 0
