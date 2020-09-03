@@ -248,7 +248,7 @@ class Utils:
                     p_tie_count += 1
                     finished = True
         print('Starting opp')
-        for trial in range(trials):
+        for trial in tqdm(range(trials)):
             state = Utils.make_graph(opp.number_of_nodes)
             finished = False
             turn = False

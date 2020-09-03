@@ -6,17 +6,125 @@ from GQN import GQN
 import math
 from ax.service.ax_client import AxClient
 
-# TODO: GAT with ax
-# TODO: GAT Training on 3k trials
-# TODO: DQN with best parans on k=3
-# TODO: DQN with best params on k=4
-# TODO: MCTS with best params on k=3
-# TODO: MCTS with best params on k=4
 
 #TQL
 
-# player = TQL('Red', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997})
-# opp = TQL('Blue', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997})
+player = TQL('Red', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},training=False)
+opp = TQL('Blue', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},training=False)
+opp.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Blue,2020 08 24-08 35 30.pkl.xz')
+player.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Red,2020 08 24-08 35 19.pkl.xz')
+
+try:
+    Utils.play_against_random(player,opp,trials=5000)
+except Exception:
+    print('TQL 3 Failed')
+
+dqn_best_params = {'HIDDEN_LAYER_SIZE': 116, 'BUFFER_SIZE': 182, 'BATCH_SIZE': 72, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0073632, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+player = DQN('Red', dqn_best_params,training=False)
+opp = DQN('Blue', dqn_best_params,training=False)
+player.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 25-09 55 42.pth')
+opp.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 25-09 55 42.pth')
+
+try:
+    Utils.play_against_random(player,opp,trials=5000)
+except Exception:
+    print('DQN 3 Failed')
+
+gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+player = GQN('Red', gqn_params,training=False)
+opp = GQN('Blue', gqn_params,training=False)
+player.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 26-09 26 38.pth')
+opp.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 26-09 26 38.pth')
+
+try:
+    Utils.play_against_random(player,opp,trials=5000)
+except Exception:
+    print('GQN 3 Failed')
+
+
+player = MCTSAgent({'Trials':200,'C':1.4142,'EPSILON':.5},'Red',3,6)
+opp = MCTSAgent({'Trials':200,'C':1.4142,'EPSILON':.5},'Blue',3,6)
+
+try:
+    Utils.play_against_random(player,opp,trials=1000,mcts=True)
+except Exception:
+    print('MCTS 3 Failed')
+
+
+player = TQL('Red', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},number_of_nodes=18,chain_length=4,training=False)
+opp = TQL('Blue', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},number_of_nodes=18,chain_length=4,training=False)
+player.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Red,2020 08 29-08 31 32.pkl.xz')
+opp.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Blue,2020 08 29-08 58 58.pkl.xz')
+
+try:
+    Utils.play_against_random(player,opp,trials=5000)
+except Exception:
+    print('TQL 4 Failed')
+
+dqn_best_params = {'HIDDEN_LAYER_SIZE': 116, 'BUFFER_SIZE': 182, 'BATCH_SIZE': 72, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0073632, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+player = DQN('Red', dqn_best_params,number_of_nodes=18,chain_length=4,training=False)
+opp = DQN('Blue', dqn_best_params,number_of_nodes=18,chain_length=4,training=False)
+player.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 27-17 34 27.pth')
+opp.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 27-17 34 27.pth')
+
+try:
+    Utils.play_against_random(player,opp,trials=5000)
+except Exception:
+    print('DQN 4 Failed')
+
+gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+player = GQN('Red', gqn_params,number_of_nodes=18,chain_length=4,training=False)
+opp = GQN('Blue', gqn_params,number_of_nodes=18,chain_length=4,training=False)
+player.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 28-10 59 27.pth')
+opp.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 28-10 59 27.pth')
+
+try:
+    Utils.play_against_random(player,opp,trials=5000)
+except Exception:
+    print('GQN 4 Failed')
+
+player = MCTSAgent({'Trials':200,'C':1.4142,'EPSILON':.5},'Red',4,18)
+opp = MCTSAgent({'Trials':200,'C':1.4142,'EPSILON':.5},'Blue',4,18)
+
+try:
+    Utils.play_against_random(player,opp,trials=20,mcts=True)
+except Exception:
+    print('MCTS 4 Failed')
+
+
+
+gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+player = GQN('Red', gqn_params,network_id=2,training=False)
+opp = GQN('Blue', gqn_params,network_id=2,training=False)
+player.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 29-23 39 07.pth')
+opp.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 29-23 39 07.pth')
+
+try:
+    Utils.play_against_random(player,opp,trials=5000)
+except Exception:
+    print('GQN 3 ID 2 Failed')
+
+gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+player = GQN('Red', gqn_params,network_id=3,training=False)
+opp = GQN('Blue', gqn_params,network_id=3,training=False)
+player.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 30-03 20 27.pth')
+opp.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 30-03 20 27.pth')
+
+try:
+    Utils.play_against_random(player,opp,trials=5000)
+except Exception:
+    print('GQN 3 ID 3 Failed')
+
+
+dplayer = DQN('Red', dqn_best_params)
+dopp = DQN('Blue', dqn_best_params)
+player.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 29-02 56 39.pth')
+opp.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 29-03 49 52.pth')
+
+try:
+    Utils.play_against_random(player,opp,trials=5000)
+except Exception:
+    print('Modified DQN Failed')
 # u1 = Utils(player,opp,30000)
 # u1.train()
 # player.store()
@@ -324,10 +432,10 @@ except Exception:
 # opp.save_dict()
 
 
-# player.load('models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.6 EPSILON_DECAY=0.99997Red,2020 08 10-15 22 53.pkl.xz')
-# opp.load('models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Blue,2020 08 10-15 23 55.pkl.xz')
-# player.load('models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.6 EPSILON_DECAY=0.99997Red,2020 08 07-17 47 51.pkl.xz')
-# opp.load('models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Blue,2020 08 07-17 47 54.pkl.xz')
+# player.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.6 EPSILON_DECAY=0.99997Red,2020 08 10-15 22 53.pkl.xz')
+# opp.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Blue,2020 08 10-15 23 55.pkl.xz')
+# player.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.6 EPSILON_DECAY=0.99997Red,2020 08 07-17 47 51.pkl.xz')
+# opp.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Blue,2020 08 07-17 47 54.pkl.xz')
 # u.play(player,opp)
 # print(u.optimize_training([
 #     {
