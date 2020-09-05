@@ -215,8 +215,8 @@ class Utils:
         o_win_count= 0
         o_loss_count = 0
         o_tie_count = 0
-        print('Starting Player')
-        for trial in tqdm(range(trials)):
+        print('Starting Player',flush=True)
+        for trial in (range(trials)):
             state = Utils.make_graph(player.number_of_nodes)
             finished = False
             turn = True
@@ -236,19 +236,19 @@ class Utils:
                                              choice(list(Utils.get_uncolored_edges(state))))
 
                 turn = not turn
-                
-
                 if Utils.reward(state, player.chain_length, player.color) == 1:
                     p_win_count += 1
                     finished = True
+
                 elif Utils.reward(state, player.chain_length, player.color) == -1:
                     p_loss_count += 1
+
                     finished = True
                 elif not Utils.get_uncolored_edges(state):
                     p_tie_count += 1
                     finished = True
-        print('Starting opp')
-        for trial in tqdm(range(trials)):
+        print('Starting opp',flush=True)
+        for trial in (range(trials)):
             state = Utils.make_graph(opp.number_of_nodes)
             finished = False
             turn = False
@@ -268,18 +268,18 @@ class Utils:
                                              choice(list(Utils.get_uncolored_edges(state))))
                 turn = not turn
 
-                if Utils.reward(state, opp.chain_length, opp.color) == -1:
+                if Utils.reward(state, opp.chain_length, opp.color) == 1:
                     o_win_count += 1
                     finished = True
-                elif Utils.reward(state, opp.chain_length, opp.color) == 1:
+                elif Utils.reward(state, opp.chain_length, opp.color) == -1:
                     o_loss_count += 1
+
                     finished = True
                 elif not Utils.get_uncolored_edges(state):
                     o_tie_count += 1
                     finished = True
-        print(p_win_count,p_loss_count,o_win_count,o_loss_count)
-        print(f'Player won {round(p_win_count/trials,3)}% , lost {round(p_loss_count/trials,3)}% and tied {round(p_tie_count/trials,3)}% of games')
-        print(f'Opponent won {round(o_win_count/trials,3)}% , lost {round(o_loss_count/trials,3)}% and tied {round(o_tie_count/trials,3)}% of games')
+        print(f'Player won {round(p_win_count,3)}% , lost {round(p_loss_count,3)}% and tied {round(p_tie_count,3)}% of games',flush=True)
+        print(f'Opponent won {round(o_win_count,3)}% , lost {round(o_loss_count,3)}% and tied {round(o_tie_count,3)}% of games',flush=True)
         return p_win_count/trials
 
 

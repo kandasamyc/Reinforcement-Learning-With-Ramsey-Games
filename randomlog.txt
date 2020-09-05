@@ -1,0 +1,41 @@
+Starting Player
+Starting opp
+Player won 175% , lost 325% and tied 0% of games
+Opponent won 209% , lost 291% and tied 0% of games
+Starting Player
+Starting opp
+Player won 296% , lost 204% and tied 0% of games
+Opponent won 207% , lost 293% and tied 0% of games
+Starting Player
+Starting opp
+Player won 218% , lost 282% and tied 0% of games
+Opponent won 198% , lost 302% and tied 0% of games
+Starting Player
+Starting opp
+Player won 305% , lost 195% and tied 0% of games
+Opponent won 207% , lost 293% and tied 0% of games
+Starting Player
+Starting opp
+Player won 500% , lost 0% and tied 0% of games
+Opponent won 479% , lost 21% and tied 0% of games
+Starting Player
+Starting opp
+Player won 262% , lost 238% and tied 0% of games
+Opponent won 227% , lost 273% and tied 0% of games
+Starting Player
+Starting opp
+Player won 335% , lost 165% and tied 0% of games
+Opponent won 303% , lost 197% and tied 0% of games
+Starting Player
+Starting opp
+Player won 196% , lost 304% and tied 0% of games
+Opponent won 204% , lost 296% and tied 0% of games
+Starting Player
+Starting Player
+Starting opp
+Player won 327% , lost 173% and tied 0% of games
+Opponent won 186% , lost 314% and tied 0% of games
+Starting Player
+Starting opp
+Player won 352% , lost 148% and tied 0% of games
+Opponent won 186% , lost 314% and tied 0% of games

@@ -9,89 +9,76 @@ from ax.service.ax_client import AxClient
 
 #TQL
 
+dqn_best_params = {'HIDDEN_LAYER_SIZE': 116, 'BUFFER_SIZE': 182, 'BATCH_SIZE': 72, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0073632, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+dplayer = DQN('Red', dqn_best_params,training=False)
+dopp = DQN('Blue', dqn_best_params,training=False)
+dplayer.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 29-02 56 39.pth')
+dopp.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 29-03 49 52.pth')
+
+try:
+    Utils.play_against_random(dplayer,dopp,trials=500)
+except Exception:
+    print('Modified DQN Failed',flush=True)
 player = TQL('Red', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},training=False)
 opp = TQL('Blue', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},training=False)
 opp.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Blue,2020 08 24-08 35 30.pkl.xz')
 player.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Red,2020 08 24-08 35 19.pkl.xz')
-
+# 
 try:
-    Utils.play_against_random(player,opp,trials=5000)
+    Utils.play_against_random(player,opp,trials=500)
 except Exception:
-    print('TQL 3 Failed')
-
-dqn_best_params = {'HIDDEN_LAYER_SIZE': 116, 'BUFFER_SIZE': 182, 'BATCH_SIZE': 72, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0073632, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+    print('TQL 3 Failed',flush=True)
+# 
 player = DQN('Red', dqn_best_params,training=False)
 opp = DQN('Blue', dqn_best_params,training=False)
 player.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 25-09 55 42.pth')
 opp.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 25-09 55 42.pth')
-
+# 
 try:
-    Utils.play_against_random(player,opp,trials=5000)
+    Utils.play_against_random(player,opp,trials=500)
 except Exception:
-    print('DQN 3 Failed')
-
+    print('DQN 3 Failed',flush=True)
 gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
 player = GQN('Red', gqn_params,training=False)
 opp = GQN('Blue', gqn_params,training=False)
 player.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 26-09 26 38.pth')
 opp.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 26-09 26 38.pth')
-
 try:
-    Utils.play_against_random(player,opp,trials=5000)
+    Utils.play_against_random(player,opp,trials=500)
 except Exception:
-    print('GQN 3 Failed')
-
-
+    print('GQN 3 Failed',flush=True)
 player = MCTSAgent({'Trials':200,'C':1.4142,'EPSILON':.5},'Red',3,6)
 opp = MCTSAgent({'Trials':200,'C':1.4142,'EPSILON':.5},'Blue',3,6)
-
 try:
-    Utils.play_against_random(player,opp,trials=1000,mcts=True)
+    Utils.play_against_random(player,opp,trials=500,mcts=True)
 except Exception:
-    print('MCTS 3 Failed')
-
-
+    print('MCTS 3 Failed',flush=True)
 player = TQL('Red', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},number_of_nodes=18,chain_length=4,training=False)
 opp = TQL('Blue', {"GAMMA": .3, 'EPSILON': .5, 'ALPHA': .38, 'EPSILON_DECAY': .99997},number_of_nodes=18,chain_length=4,training=False)
 player.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Red,2020 08 29-08 31 32.pkl.xz')
 opp.load('./models/GAMMA=0.3 EPSILON=0.5 ALPHA=0.38 EPSILON_DECAY=0.99997Blue,2020 08 29-08 58 58.pkl.xz')
-
 try:
-    Utils.play_against_random(player,opp,trials=5000)
+    Utils.play_against_random(player,opp,trials=500)
 except Exception:
-    print('TQL 4 Failed')
-
+    print('TQL 4 Failed',flush=True)
 dqn_best_params = {'HIDDEN_LAYER_SIZE': 116, 'BUFFER_SIZE': 182, 'BATCH_SIZE': 72, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0073632, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
 player = DQN('Red', dqn_best_params,number_of_nodes=18,chain_length=4,training=False)
 opp = DQN('Blue', dqn_best_params,number_of_nodes=18,chain_length=4,training=False)
 player.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 27-17 34 27.pth')
 opp.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 27-17 34 27.pth')
-
 try:
-    Utils.play_against_random(player,opp,trials=5000)
+    Utils.play_against_random(player,opp,trials=500)
 except Exception:
-    print('DQN 4 Failed')
-
+    print('DQN 4 Failed',flush=True)
 gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
 player = GQN('Red', gqn_params,number_of_nodes=18,chain_length=4,training=False)
 opp = GQN('Blue', gqn_params,number_of_nodes=18,chain_length=4,training=False)
 player.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 28-10 59 27.pth')
 opp.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 28-10 59 27.pth')
-
 try:
-    Utils.play_against_random(player,opp,trials=5000)
+    Utils.play_against_random(player,opp,trials=500)
 except Exception:
-    print('GQN 4 Failed')
-
-player = MCTSAgent({'Trials':200,'C':1.4142,'EPSILON':.5},'Red',4,18)
-opp = MCTSAgent({'Trials':200,'C':1.4142,'EPSILON':.5},'Blue',4,18)
-
-try:
-    Utils.play_against_random(player,opp,trials=20,mcts=True)
-except Exception:
-    print('MCTS 4 Failed')
-
-
+    print('GQN 4 Failed',flush=True)
 
 gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
 player = GQN('Red', gqn_params,network_id=2,training=False)
@@ -100,9 +87,9 @@ player.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_
 opp.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 29-23 39 07.pth')
 
 try:
-    Utils.play_against_random(player,opp,trials=5000)
+    Utils.play_against_random(player,opp,trials=500)
 except Exception:
-    print('GQN 3 ID 2 Failed')
+    print('GQN 3 ID 2 Failed',flush=True)
 
 gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
 player = GQN('Red', gqn_params,network_id=3,training=False)
@@ -111,20 +98,21 @@ player.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_
 opp.open('./models/HIDDEN_LAYER_SIZE=34 BUFFER_SIZE=186 BATCH_SIZE=98 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0052994 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 30-03 20 27.pth')
 
 try:
-    Utils.play_against_random(player,opp,trials=5000)
+    Utils.play_against_random(player,opp,trials=500)
 except Exception:
-    print('GQN 3 ID 3 Failed')
+    print('GQN 3 ID 3 Failed',flush=True)
 
 
-dplayer = DQN('Red', dqn_best_params)
-dopp = DQN('Blue', dqn_best_params)
-player.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Red,2020 08 29-02 56 39.pth')
-opp.open('./models/HIDDEN_LAYER_SIZE=116 BUFFER_SIZE=182 BATCH_SIZE=72 TARGET_MODEL_SYNC=8 LEARNING_RATE=0.0073632 GAMMA=0.3 EPSILON=0.5 EPSILON_DECAY=0.99997Blue,2020 08 29-03 49 52.pth')
-
+player = MCTSAgent({'Trials':200,'C':1.4142,'EPSILON':.5},'Red',4,18)
+opp = MCTSAgent({'Trials':200,'C':1.4142,'EPSILON':.5},'Blue',4,18)
 try:
-    Utils.play_against_random(player,opp,trials=5000)
+    Utils.play_against_random(player,opp,trials=10,mcts=True)
 except Exception:
-    print('Modified DQN Failed')
+    print('MCTS 4 Failed',flush=True)
+
+
+
+
 # u1 = Utils(player,opp,30000)
 # u1.train()
 # player.store()
@@ -176,31 +164,31 @@ except Exception:
 
 
 
-gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
-player = GQN('Red', gqn_params,network_id=2)
-opp = GQN('Blue', gqn_params,network_id=2)
-u = Utils(player, opp, 3000)
-try:
-    u.train()
-    player.store()
-    opp.store()
-    player.save_dict()
-    opp.save_dict()
-except Exception:
-    print('GQN 2 for 3 Failed')
+# gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+# player = GQN('Red', gqn_params,network_id=2)
+# opp = GQN('Blue', gqn_params,network_id=2)
+# u = Utils(player, opp, 3000)
+# try:
+#     u.train()
+#     player.store()
+#     opp.store()
+#     player.save_dict()
+#     opp.save_dict()
+# except Exception:
+#     print('GQN 2 for 3 Failed')
 
-gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
-player = GQN('Red', gqn_params,network_id=3)
-opp = GQN('Blue', gqn_params,network_id=3)
-u1 = Utils(player, opp, 3000)
-try:
-    u1.train()
-    player.store()
-    opp.store()
-    player.save_dict()
-    opp.save_dict()
-except Exception:
-    print('GQN 3 for 3 Failed')
+# gqn_params = {'HIDDEN_LAYER_SIZE': 34, 'BUFFER_SIZE': 186, 'BATCH_SIZE': 98, 'TARGET_MODEL_SYNC': 8, 'LEARNING_RATE': 0.0052994, 'GAMMA': 0.3, 'EPSILON': 0.5, 'EPSILON_DECAY': 0.99997}
+# player = GQN('Red', gqn_params,network_id=3)
+# opp = GQN('Blue', gqn_params,network_id=3)
+# u1 = Utils(player, opp, 3000)
+# try:
+#     u1.train()
+#     player.store()
+#     opp.store()
+#     player.save_dict()
+#     opp.save_dict()
+# except Exception:
+#     print('GQN 3 for 3 Failed')
 
 # player = GQN('Red', gqn_params,number_of_nodes=18,chain_length=4)
 # opp = GQN('Blue', gqn_params,number_of_nodes=18,chain_length=4)

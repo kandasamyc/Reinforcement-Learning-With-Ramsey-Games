@@ -36,7 +36,8 @@ class TQL(Agent):
         reward = Utils.reward(new_state, self.chain_length, self.color)
 
         # update q table
-        self.update_q(self.state, self.action, reward)
+        if self.training:
+            self.update_q(self.state, self.action, reward)
         opponent.opp_move(self.state, self.action, self.color)
         self.state = new_state
         self.avg_move_time = (self.avg_move_time*(self.number_of_moves-1 if self.number_of_moves > 1 else 1) + (time_ns() - start_time)) / self.number_of_moves
