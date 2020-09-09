@@ -24,7 +24,7 @@ Player won 262% , lost 238% and tied 0% of games
 Opponent won 227% , lost 273% and tied 0% of games
 Starting Player
 Starting opp
-Player won 335% , lost 165% and tied 0% of games
+Player won 335% , lost 165% and tied 0% of 175games
 Opponent won 303% , lost 197% and tied 0% of games
 Starting Player
 Starting opp
