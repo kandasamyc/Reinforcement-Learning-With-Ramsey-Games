@@ -46,7 +46,8 @@ class Utils:
             color_dict = {1: 'red', -1: 'blue'}
             G.es['color'] = [color_dict[weight] for weight in G.es['weight']]
             ig.plot(G, layout=layout)
-            ig.plot(G, f'games/{time.strftime("%Y %m %d-%H %M %S")}.png', layout=layout)
+            ig.plot(G, f'Final_Images/{time.strftime("%Y %m %d-%H %M %S")}.png', layout=layout)
+            return None
         else:
             return G.summary()
 
@@ -235,6 +236,8 @@ class Utils:
                     state = Utils.transition(state, 'Red' if player.color == 'Blue' else 'Blue',
                                              choice(list(Utils.get_uncolored_edges(state))))
 
+                Utils.display_graph(state)
+
                 turn = not turn
                 if Utils.reward(state, player.chain_length, player.color) == 1:
                     p_win_count += 1
@@ -267,7 +270,7 @@ class Utils:
                     state = Utils.transition(state, 'Red' if opp.color == 'Blue' else 'Blue',
                                              choice(list(Utils.get_uncolored_edges(state))))
                 turn = not turn
-
+                Utils.display_graph(state)
                 if Utils.reward(state, opp.chain_length, opp.color) == 1:
                     o_win_count += 1
                     finished = True
